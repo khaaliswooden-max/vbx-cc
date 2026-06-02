@@ -1,0 +1,148 @@
+VISIONBLOX LLC PROPRIETARY LICENSE
+
+Copyright (c) 2026 Visionblox LLC. All Rights Reserved.
+
+================================================================================
+NOTICE OF CONFIDENTIALITY AND PROPRIETARY RIGHTS
+================================================================================
+
+This software, including all source code, scripts, documentation, data files,
+spreadsheets, dashboards, configuration files, and associated materials
+(collectively, the "Software"), is the confidential and proprietary property
+of Visionblox LLC ("Visionblox"), a California limited liability company with
+its principal place of business at 2570 N. First Street, San Jose, CA 95131
+(CAGE Code 9Z4X2; UEI H4X2Z7R9E3E3).
+
+The Software constitutes a trade secret of Visionblox and is protected by
+United States and international copyright law, trade secret law, and other
+applicable intellectual property laws and treaties.
+
+================================================================================
+THIRD-PARTY NON-DISCLOSURE OBLIGATIONS
+================================================================================
+
+The Software contains, references, or is derived from information subject to
+one or more non-disclosure agreements ("NDAs") executed between Visionblox and
+third parties, including but not limited to teaming partners, prospective
+teaming partners, prime contractors, subcontractors, and government customers.
+
+By accessing, viewing, copying, modifying, or distributing any portion of the
+Software, you acknowledge and agree that:
+
+  1. You may be exposed to information designated as confidential under one or
+     more such NDAs;
+
+  2. You are personally bound to the confidentiality obligations of any NDA
+     under which such information was originally disclosed to Visionblox,
+     regardless of whether you are a signatory to that NDA;
+
+  3. You shall not disclose, reproduce, distribute, or use such information
+     for any purpose other than the specific business purpose authorized in
+     writing by Visionblox;
+
+  4. Removal of confidentiality markings, NDA references, or party identifiers
+     from any portion of the Software does not waive or diminish the
+     confidentiality obligations attached to such information;
+
+  5. Any unauthorized disclosure may constitute a material breach of the
+     underlying NDA and may give rise to civil and, in some jurisdictions,
+     criminal liability.
+
+================================================================================
+PERMITTED USE
+================================================================================
+
+Use of the Software is limited to:
+
+  (a) Employees, contractors, and authorized agents of Visionblox LLC acting
+      within the scope of their engagement with Visionblox; and
+
+  (b) Such other persons as may be expressly authorized in writing by an
+      officer of Visionblox.
+
+All other use, reproduction, distribution, modification, public display, public
+performance, sublicensing, sale, lease, rental, or transfer of the Software, in
+whole or in part, in any form or by any means, is strictly prohibited without
+the prior written consent of Visionblox.
+
+================================================================================
+NO LICENSE GRANTED
+================================================================================
+
+No license, express or implied, by estoppel or otherwise, to any intellectual
+property rights of Visionblox or any third party is granted by this notice or
+by the act of making the Software available, except as expressly set forth
+herein.
+
+================================================================================
+PROHIBITED ACTIONS
+================================================================================
+
+Without limiting the foregoing, the following actions are expressly prohibited
+without prior written authorization from Visionblox:
+
+  - Public posting, publication, or distribution of the Software or any
+    portion thereof, including via public source-code repositories, file-
+    sharing services, social media, or any other public-facing medium;
+
+  - Use of the Software, in whole or in part, in any product, service, or
+    deliverable provided to any party other than Visionblox;
+
+  - Reverse engineering, decompilation, or disassembly of the Software,
+    except to the extent such activity is expressly permitted by applicable
+    law notwithstanding this restriction;
+
+  - Use of the Software to train, fine-tune, or otherwise improve any machine
+    learning model, large language model, or artificial intelligence system,
+    except for Visionblox-authorized internal tooling;
+
+  - Removal or alteration of any copyright, trademark, trade secret, or
+    proprietary notice contained in or affixed to the Software.
+
+================================================================================
+DISCLAIMER OF WARRANTIES
+================================================================================
+
+THE SOFTWARE IS PROVIDED "AS IS" AND "AS AVAILABLE," WITHOUT WARRANTY OF ANY
+KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, NON-INFRINGEMENT, ACCURACY,
+OR FREEDOM FROM ERRORS. VISIONBLOX MAKES NO REPRESENTATION OR WARRANTY THAT
+THE SOFTWARE WILL BE UNINTERRUPTED, ERROR-FREE, OR FREE OF HARMFUL COMPONENTS.
+
+================================================================================
+LIMITATION OF LIABILITY
+================================================================================
+
+IN NO EVENT SHALL VISIONBLOX, ITS OFFICERS, DIRECTORS, EMPLOYEES, AGENTS, OR
+AFFILIATES BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+CONSEQUENTIAL, OR EXEMPLARY DAMAGES (INCLUDING, BUT NOT LIMITED TO, LOST
+PROFITS, LOST DATA, OR BUSINESS INTERRUPTION) ARISING OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THIS NOTICE, WHETHER BASED ON CONTRACT, TORT, STRICT
+LIABILITY, OR OTHERWISE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+
+================================================================================
+GOVERNING LAW
+================================================================================
+
+This notice and any dispute arising out of or relating to the Software shall
+be governed by and construed in accordance with the laws of the State of
+California, without regard to its conflict-of-laws principles. The federal and
+state courts located in Santa Clara County, California shall have exclusive
+jurisdiction over any such dispute.
+
+================================================================================
+CONTACT
+================================================================================
+
+For licensing inquiries or to request authorization for any use beyond that
+expressly permitted herein, contact:
+
+    Visionblox LLC
+    Attn: Director of Enterprise Capture & Compliance
+    Khaalis Wooden, MBA
+    2570 N. First Street
+    San Jose, CA 95131
+    Email: khaalis.wooden@visionblox.com
+    Phone: (256) 988-1130
+
+================================================================================

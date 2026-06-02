@@ -1,0 +1,153 @@
+# ============================================================
+# VBX Command Center — .gitignore
+# ============================================================
+# Treats everything in output/ as sensitive by default.
+# Anything containing real partner data, revenue figures, or
+# operational pipeline values must never enter git history.
+# ============================================================
+
+# ---- Generated workbooks (CRITICAL — contain real data) ----
+output/
+output/*.xlsx
+output/*.xls
+*.generated.xlsx
+
+# Excel/LibreOffice lock files
+~$*.xlsx
+~$*.xls
+~$*.docx
+.~lock.*
+
+# ---- Local seed-data overrides (CRITICAL — contain real data) ----
+scripts/_seed_data_local.py
+scripts/_local_*.py
+data/*.real.xlsx
+data/_local_*
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+.env
+.venv.bak/
+
+# pyenv
+.python-version
+
+# Coverage / testing
+.coverage
+.coverage.*
+.cache
+.pytest_cache/
+.tox/
+.hypothesis/
+htmlcov/
+
+# ---- Node (only if introduced for verification tooling) ----
+node_modules/
+package-lock.json
+yarn.lock
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# ---- Credentials / secrets (defense in depth) ----
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+*.cert
+*.crt
+*.p12
+secrets/
+credentials.json
+service-account*.json
+
+# ---- IDE / editor ----
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+*.sublime-project
+*.sublime-workspace
+
+# ---- macOS ----
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# ---- Windows ----
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msm
+*.msp
+*.lnk
+
+# ---- Linux ----
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# ---- Logs ----
+logs/
+*.log
+
+# ---- Temp files ----
+*.tmp
+*.temp
+*.bak
+*.backup
+*.orig
+
+# ---- Screenshots (security policy — never commit dashboard screenshots) ----
+screenshots/
+*.screenshot.png
+*.screenshot.jpg
+dashboard_screenshot*
