@@ -115,12 +115,13 @@ def _today():
 
 def _asof_date():
     """Read the As-of date the snapshot was built against (Dashboard!C4)."""
+    fallback = "see the As-of date shown top-right in the dashboard"
     try:
         from openpyxl import load_workbook
         v = load_workbook(WORKBOOK, data_only=True)["Dashboard"]["C4"].value
-        return _fmt_date(v) if hasattr(v, "strftime") else str(v)
+        return _fmt_date(v) if hasattr(v, "strftime") else fallback
     except Exception:
-        return "see the As-of date shown top-right in the dashboard"
+        return fallback
 
 
 if __name__ == "__main__":
