@@ -1,0 +1,1982 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VBX Command Center — Operations Dashboard</title>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+<style>
+/* ============================================================
+   VBX COMMAND CENTER — STYLE
+   Brand: Navy #232D5A | Teal #2EA891 | Gold #F7B801 | Arial
+   Aesthetic: Federal ops command — dense, precise, number-forward
+   ============================================================ */
+
+:root {
+  --navy:        #232D5A;
+  --navy-dark:   #1A2245;
+  --navy-light:  #2E3B6E;
+  --teal:        #2EA891;
+  --teal-dark:   #218071;
+  --gold:        #F7B801;
+  --gold-dark:   #D49C00;
+  --red:         #DC2626;
+  --red-bg:      #FCE8E6;
+  --green:       #16A34A;
+  --green-bg:    #E6F4EA;
+  --amber:       #F59E0B;
+  --amber-bg:    #FFF4D6;
+
+  --bg:          #F4F5F8;
+  --surface:     #FFFFFF;
+  --surface-2:   #FAFBFD;
+  --border:      #E2E5EC;
+  --border-strong:#C8CDD7;
+  --text:        #111827;
+  --text-2:      #4B5563;
+  --text-3:      #9CA3AF;
+  --text-inverse:#FFFFFF;
+
+  --shadow-sm:   0 1px 2px rgba(35, 45, 90, 0.05);
+  --shadow:      0 1px 3px rgba(35, 45, 90, 0.08), 0 1px 2px rgba(35, 45, 90, 0.04);
+  --shadow-lg:   0 10px 25px rgba(35, 45, 90, 0.12), 0 4px 10px rgba(35, 45, 90, 0.06);
+
+  --radius:      4px;
+  --radius-lg:   6px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 14px;
+  color: var(--text);
+  background: var(--bg);
+  line-height: 1.4;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ============================================================
+   HEADER BAR
+   ============================================================ */
+.app-header {
+  background: var(--navy);
+  background: linear-gradient(180deg, var(--navy) 0%, var(--navy-dark) 100%);
+  color: var(--text-inverse);
+  padding: 14px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: var(--shadow);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  border-bottom: 3px solid var(--gold);
+}
+
+.brand {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.brand-title {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.brand-subtitle {
+  font-size: 10.5px;
+  color: rgba(255, 255, 255, 0.7);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.brand-subtitle .badge {
+  display: inline-block;
+  padding: 1px 6px;
+  background: rgba(247, 184, 1, 0.18);
+  color: var(--gold);
+  border-radius: 2px;
+  margin-left: 6px;
+  font-weight: 700;
+}
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.asof-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 6px 12px;
+  border-radius: var(--radius);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+.asof-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(255, 255, 255, 0.6);
+}
+.asof-control input[type="date"] {
+  background: transparent;
+  border: none;
+  color: var(--gold);
+  font-family: Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  outline: none;
+  cursor: pointer;
+  color-scheme: dark;
+}
+
+.file-upload {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.file-upload-btn {
+  background: var(--teal);
+  color: var(--text-inverse);
+  border: none;
+  padding: 8px 14px;
+  border-radius: var(--radius);
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.file-upload-btn:hover { background: var(--teal-dark); }
+.file-upload-btn input { display: none; }
+.file-status {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.6);
+  font-style: italic;
+}
+.file-status.loaded { color: var(--teal); font-style: normal; font-weight: 700; }
+
+/* ============================================================
+   LAYOUT
+   ============================================================ */
+.main {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 24px 28px 48px;
+}
+
+.section {
+  margin-bottom: 32px;
+}
+.section-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-2);
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.section-title .section-meta {
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--text-3);
+  text-transform: none;
+  letter-spacing: 0.04em;
+  font-style: italic;
+}
+
+/* ============================================================
+   HEADLINE KPI CARDS
+   ============================================================ */
+.kpi-grid {
+  display: grid;
+  gap: 12px;
+}
+.kpi-grid.financial { grid-template-columns: repeat(5, 1fr); }
+.kpi-grid.operations { grid-template-columns: repeat(4, 1fr); }
+
+.kpi-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px 18px;
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.12s, box-shadow 0.12s, border-color 0.12s;
+  overflow: hidden;
+}
+.kpi-card:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--border-strong);
+}
+.kpi-card::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 3px;
+  background: var(--navy);
+}
+.kpi-card.accent-gold::before  { background: var(--gold); }
+.kpi-card.accent-teal::before  { background: var(--teal); }
+.kpi-card.accent-red::before   { background: var(--red); }
+.kpi-card.accent-amber::before { background: var(--amber); }
+
+.kpi-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 8px;
+}
+.kpi-value {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+.kpi-value.negative { color: var(--red); }
+.kpi-value.positive { color: var(--green); }
+.kpi-sub {
+  font-size: 11px;
+  color: var(--text-2);
+  margin-top: 6px;
+  font-variant-numeric: tabular-nums;
+}
+.kpi-drill-hint {
+  position: absolute;
+  bottom: 8px;
+  right: 10px;
+  font-size: 9px;
+  color: var(--text-3);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.kpi-card:hover .kpi-drill-hint { opacity: 1; }
+
+/* ============================================================
+   CADENCE TABLE
+   ============================================================ */
+.cadence-table {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow: hidden;
+  font-variant-numeric: tabular-nums;
+}
+.cadence-table thead th {
+  background: var(--navy);
+  color: var(--text-inverse);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 10px 12px;
+  text-align: right;
+  border-bottom: 1px solid var(--navy-dark);
+}
+.cadence-table thead th:first-child { text-align: left; }
+.cadence-table thead th.sparkline-col { text-align: center; width: 130px; }
+.cadence-table tbody td {
+  padding: 11px 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  text-align: right;
+}
+.cadence-table tbody tr:last-child td { border-bottom: none; }
+.cadence-table tbody tr {
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.cadence-table tbody tr:hover { background: var(--surface-2); }
+.cadence-table .kpi-name {
+  text-align: left;
+  font-weight: 700;
+  color: var(--text);
+}
+.cadence-table .delta {
+  font-weight: 700;
+  font-size: 12px;
+}
+.cadence-table .delta.pos { color: var(--green); }
+.cadence-table .delta.neg { color: var(--red); }
+.cadence-table .delta.flat { color: var(--text-3); }
+.cadence-table td.sparkline-cell { padding: 6px 8px; }
+
+/* ============================================================
+   SPARKLINES
+   ============================================================ */
+.sparkline {
+  display: block;
+  margin: 0 auto;
+}
+.sparkline rect { transition: fill 0.15s; }
+
+/* ============================================================
+   TWO-COLUMN LAYOUT
+   ============================================================ */
+.two-col {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 24px;
+}
+@media (max-width: 1100px) {
+  .two-col { grid-template-columns: 1fr; }
+}
+
+/* ============================================================
+   PIPELINE TABLE
+   ============================================================ */
+.pipeline-table {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow: hidden;
+  font-variant-numeric: tabular-nums;
+}
+.pipeline-table thead th {
+  background: var(--navy);
+  color: var(--text-inverse);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 10px 12px;
+  text-align: left;
+}
+.pipeline-table thead th.right { text-align: right; }
+.pipeline-table tbody td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 12.5px;
+}
+.pipeline-table tbody td.right { text-align: right; font-weight: 700; }
+.pipeline-table tbody tr:last-child td { border-bottom: none; }
+.opp-name { font-weight: 700; color: var(--text); }
+.opp-meta { font-size: 11px; color: var(--text-3); margin-top: 2px; }
+.stage-pill {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.stage-Identified { background: #E5E7EB; color: #374151; }
+.stage-Qualified  { background: #DBEAFE; color: #1E40AF; }
+.stage-Capture    { background: #FEF3C7; color: #92400E; }
+.stage-Submitted  { background: #DCFCE7; color: #166534; }
+.stage-Awarded    { background: var(--teal); color: white; }
+.stage-Lost       { background: var(--red-bg); color: var(--red); }
+.stage-No-Bid     { background: #F3F4F6; color: #6B7280; }
+
+/* ============================================================
+   SCENARIO PANEL
+   ============================================================ */
+.scenario-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 22px 24px;
+  position: relative;
+  overflow: hidden;
+}
+.scenario-panel::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--teal) 0%, var(--gold) 100%);
+}
+.scenario-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+.scenario-title {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--navy);
+}
+.scenario-subtitle {
+  font-size: 11px;
+  color: var(--text-3);
+  font-style: italic;
+}
+
+.scenario-controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 18px;
+  margin-bottom: 22px;
+}
+@media (max-width: 700px) {
+  .scenario-controls { grid-template-columns: 1fr; }
+}
+
+.slider-group { display: flex; flex-direction: column; }
+.slider-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 6px;
+}
+.slider-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+.slider-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--navy);
+  font-variant-numeric: tabular-nums;
+}
+.slider-input {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+.slider-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  background: var(--gold);
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid var(--navy);
+}
+.slider-input::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  background: var(--gold);
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid var(--navy);
+}
+.slider-foot {
+  font-size: 10px;
+  color: var(--text-3);
+  margin-top: 4px;
+  font-style: italic;
+}
+
+.scenario-results {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 18px;
+}
+@media (max-width: 900px) {
+  .scenario-results { grid-template-columns: repeat(2, 1fr); }
+}
+.result-tile {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px;
+}
+.result-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 4px;
+}
+.result-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+.result-value.negative { color: var(--red); }
+.result-value.positive { color: var(--green); }
+
+/* Sensitivity table */
+.sensitivity {
+  margin-top: 8px;
+}
+.sensitivity-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-2);
+  margin-bottom: 6px;
+}
+.sensitivity-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.sensitivity-table th {
+  background: var(--surface-2);
+  padding: 7px 8px;
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-2);
+  border-bottom: 1px solid var(--border);
+  text-align: right;
+}
+.sensitivity-table th:first-child { text-align: left; }
+.sensitivity-table td {
+  padding: 7px 8px;
+  border-bottom: 1px solid var(--border);
+  text-align: right;
+}
+.sensitivity-table td:first-child {
+  text-align: left;
+  font-weight: 700;
+  color: var(--text);
+}
+.sensitivity-table tr:last-child td { border-bottom: none; }
+.sensitivity-table tr.active {
+  background: var(--amber-bg);
+}
+.sensitivity-table tr.active td:first-child::before {
+  content: "▸ ";
+  color: var(--gold-dark);
+  font-weight: 900;
+}
+.cell-pos { color: var(--green); font-weight: 700; }
+.cell-neg { color: var(--red); font-weight: 700; }
+
+/* ============================================================
+   FINANCIAL DETAIL TABLE
+   ============================================================ */
+.fin-table {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow: hidden;
+  font-variant-numeric: tabular-nums;
+}
+.fin-table thead th {
+  background: var(--navy);
+  color: var(--text-inverse);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 10px 12px;
+  text-align: right;
+}
+.fin-table thead th:first-child { text-align: left; }
+.fin-table tbody td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  text-align: right;
+}
+.fin-table tbody td:first-child { text-align: left; font-weight: 700; }
+.fin-table tbody tr:last-child td { border-bottom: none; }
+.fin-table tbody tr.budgeted { background: #FFFBEC; }
+.fin-table tbody tr.budgeted td:first-child { color: var(--gold-dark); }
+.delta-cell.pos { color: var(--green); font-weight: 700; }
+.delta-cell.neg { color: var(--red); font-weight: 700; }
+
+/* ============================================================
+   DRILL-DOWN MODAL
+   ============================================================ */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(35, 45, 90, 0.5);
+  backdrop-filter: blur(2px);
+  display: none;
+  align-items: flex-start;
+  justify-content: center;
+  z-index: 200;
+  padding: 40px 20px;
+  overflow-y: auto;
+}
+.modal-backdrop.open { display: flex; }
+.modal {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  max-width: 1200px;
+  width: 100%;
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  animation: modalIn 0.15s ease-out;
+}
+@keyframes modalIn {
+  from { transform: translateY(-8px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.modal-header {
+  background: var(--navy);
+  color: var(--text-inverse);
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2px solid var(--gold);
+}
+.modal-title {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.modal-subtitle {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.6);
+  font-style: italic;
+  margin-top: 2px;
+}
+.modal-close {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+}
+.modal-close:hover { background: rgba(255, 255, 255, 0.2); }
+.modal-body {
+  padding: 20px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+.drill-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+}
+.drill-table th {
+  background: var(--surface-2);
+  padding: 9px 10px;
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-2);
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  position: sticky;
+  top: 0;
+}
+.drill-table th.right { text-align: right; }
+.drill-table td {
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--border);
+}
+.drill-table td.right { text-align: right; }
+.drill-table tr:hover td { background: var(--surface-2); }
+.classification-pill {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 99px;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.class-PRIORITY  { background: var(--green-bg); color: var(--green); }
+.class-BENCH     { background: #FFF8C5; color: #8B6914; }
+.class-WATCHLIST { background: #FFE4D6; color: #9A3412; }
+.class-FILED     { background: #E5E7EB; color: #4B5563; }
+.class-EXPLORATORY{background:#DBEAFE; color:#1E40AF; }
+.class-PENDING   { background: #F3E8FF; color: #6D28D9; }
+
+/* ============================================================
+   EMPTY STATE
+   ============================================================ */
+.empty-state {
+  text-align: center;
+  padding: 60px 24px;
+  background: var(--surface);
+  border: 2px dashed var(--border-strong);
+  border-radius: var(--radius-lg);
+  color: var(--text-2);
+}
+.empty-state .icon {
+  font-size: 32px;
+  margin-bottom: 12px;
+  color: var(--text-3);
+}
+.empty-state .title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+.empty-state .subtitle {
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+/* ============================================================
+   BLOCKERS
+   ============================================================ */
+.blockers-list {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--red);
+  border-radius: var(--radius-lg);
+  padding: 14px 18px;
+}
+.blocker-item {
+  font-size: 12.5px;
+  color: var(--text-2);
+  padding: 4px 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.blocker-item::before {
+  content: "⚠";
+  color: var(--red);
+  font-size: 11px;
+  margin-top: 2px;
+}
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+.footer {
+  margin-top: 36px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+  font-size: 11px;
+  color: var(--text-3);
+  text-align: center;
+}
+
+.note {
+  font-size: 11px;
+  color: var(--text-3);
+  font-style: italic;
+  margin-top: 6px;
+}
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="brand">
+    <div class="brand-title">Visionblox Command Center</div>
+    <div class="brand-subtitle">
+      Operations Dashboard
+      <span class="badge">CAGE 9Z4X2</span>
+      <span class="badge">UEI H4X2Z7R9E3E3</span>
+    </div>
+  </div>
+  <div class="header-controls">
+    <div class="asof-control">
+      <span class="asof-label">As-of</span>
+      <input type="date" id="asof-date" value="2026-06-01">
+    </div>
+    <label class="file-upload">
+      <span class="file-upload-btn">
+        Upload Workbook
+        <input type="file" id="file-input" accept=".xlsx,.xls">
+      </span>
+      <span class="file-status" id="file-status">No file loaded</span>
+    </label>
+  </div>
+</header>
+
+<main class="main">
+
+  <!-- FINANCIAL REALITY BAND -->
+  <section class="section">
+    <div class="section-title">
+      <span>Financial Reality</span>
+      <span class="section-meta">Income statement bottom line · click cards to drill</span>
+    </div>
+    <div class="kpi-grid financial" id="financial-headlines">
+      <!-- Populated by JS -->
+    </div>
+  </section>
+
+  <!-- OPERATIONS BAND -->
+  <section class="section">
+    <div class="section-title">
+      <span>Operations</span>
+      <span class="section-meta">Pipeline · partners · execution snapshot</span>
+    </div>
+    <div class="kpi-grid operations" id="operations-headlines">
+      <!-- Populated by JS -->
+    </div>
+  </section>
+
+  <!-- BD CADENCE TABLE WITH SPARKLINES -->
+  <section class="section">
+    <div class="section-title">
+      <span>BD Cadence · Trailing Windows</span>
+      <span class="section-meta">Sparklines = last 13 weeks (T-91d), each bar = 1 week</span>
+    </div>
+    <table class="cadence-table">
+      <thead>
+        <tr>
+          <th>KPI</th>
+          <th>T-7d</th>
+          <th>Prior 7d</th>
+          <th>WoW Δ</th>
+          <th>T-30d</th>
+          <th>vs Target</th>
+          <th class="sparkline-col">90-Day Trend</th>
+        </tr>
+      </thead>
+      <tbody id="bd-cadence-body">
+        <!-- Populated by JS -->
+      </tbody>
+    </table>
+  </section>
+
+  <!-- FINANCIAL CADENCE -->
+  <section class="section">
+    <div class="section-title">
+      <span>Financial Cadence · Actual vs Budgeted</span>
+      <span class="section-meta">Budgeted P/L row uses income-statement expense budget as proxy until Expense_Ledger is populated</span>
+    </div>
+    <table class="fin-table">
+      <thead>
+        <tr>
+          <th>Metric</th>
+          <th>T-7d</th>
+          <th>Prior 7d</th>
+          <th>WoW Δ</th>
+          <th>T-30d</th>
+          <th>T-91d</th>
+          <th>YTD</th>
+        </tr>
+      </thead>
+      <tbody id="fin-cadence-body">
+        <!-- Populated by JS -->
+      </tbody>
+    </table>
+  </section>
+
+  <!-- TWO-COLUMN: PIPELINE + SCENARIO -->
+  <section class="section">
+    <div class="two-col">
+      <div>
+        <div class="section-title">
+          <span>Active Pipeline</span>
+          <span class="section-meta">Click row for opportunity detail</span>
+        </div>
+        <table class="pipeline-table">
+          <thead>
+            <tr>
+              <th>Opportunity</th>
+              <th>Stage</th>
+              <th class="right">Value</th>
+            </tr>
+          </thead>
+          <tbody id="pipeline-body">
+            <!-- Populated by JS -->
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <div class="section-title">
+          <span>Scenario Mode</span>
+          <span class="section-meta">Dial win-rate to see implied Y1 P/L</span>
+        </div>
+        <div class="scenario-panel">
+          <div class="scenario-controls">
+            <div class="slider-group">
+              <div class="slider-header">
+                <span class="slider-label">Win Rate</span>
+                <span class="slider-value" id="winrate-val">25%</span>
+              </div>
+              <input type="range" id="winrate-slider" class="slider-input" min="0" max="100" value="25" step="1">
+              <div class="slider-foot">% of pipeline that closes</div>
+            </div>
+            <div class="slider-group">
+              <div class="slider-header">
+                <span class="slider-label">Y1 Booked %</span>
+                <span class="slider-value" id="y1pct-val">33%</span>
+              </div>
+              <input type="range" id="y1pct-slider" class="slider-input" min="10" max="100" value="33" step="1">
+              <div class="slider-foot">% of TCV recognized in Y1 (33% = 3-yr contract)</div>
+            </div>
+            <div class="slider-group">
+              <div class="slider-header">
+                <span class="slider-label">Cycle Time</span>
+                <span class="slider-value" id="cycle-val">6 mo</span>
+              </div>
+              <input type="range" id="cycle-slider" class="slider-input" min="1" max="18" value="6" step="1">
+              <div class="slider-foot">Months from capture to first revenue</div>
+            </div>
+          </div>
+
+          <div class="scenario-results" id="scenario-results">
+            <!-- Populated by JS -->
+          </div>
+
+          <div class="sensitivity">
+            <div class="sensitivity-title">Sensitivity · Y1 P/L at Each Win Rate</div>
+            <table class="sensitivity-table" id="sensitivity-table">
+              <!-- Populated by JS -->
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BLOCKERS -->
+  <section class="section">
+    <div class="section-title">
+      <span>Active Blockers</span>
+      <span class="section-meta">Pipeline gating items</span>
+    </div>
+    <div class="blockers-list">
+      <div class="blocker-item">WA Secretary of State foreign entity registration (~$180) — gates all WA SLED work</div>
+      <div class="blocker-item">eMMA registration (Maryland) — gates BPM054667 and other Maryland SLED pursuits</div>
+      <div class="blocker-item">SOC 2 Type II gap assessment — recurring DQ on WA + select federal</div>
+      <div class="blocker-item">GSA MAS 54151HEAL Refresh 31 remediation (7 deficiencies open)</div>
+      <div class="blocker-item">Advocate IT teaming agreement (Thomas Duffy) — not executed</div>
+    </div>
+  </section>
+
+  <div class="footer">
+    Visionblox LLC · Director of Enterprise Capture &amp; Compliance · CAGE 9Z4X2 · UEI H4X2Z7R9E3E3 · GSA MAS SIN 54151HEAL
+  </div>
+</main>
+
+<!-- DRILL-DOWN MODAL -->
+<div class="modal-backdrop" id="modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="modal-title">Drill-Down</div>
+        <div class="modal-subtitle" id="modal-subtitle"></div>
+      </div>
+      <button class="modal-close" id="modal-close">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body">
+      <!-- Populated by JS -->
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   VBX COMMAND CENTER — APPLICATION LOGIC
+   ============================================================ */
+
+const STATE = {
+  asOfDate: new Date(2026, 5, 1),    // June 1, 2026
+  data: null,                          // Loaded from workbook
+  scenario: { winRate: 0.25, y1Pct: 0.33, cycle: 6 },
+};
+
+const STORAGE_KEY = 'vbx_command_center_v1';
+
+// Income-statement baseline (used until workbook upload overrides)
+const DEFAULTS = {
+  targets: {
+    arrTarget: 500000,
+    expenseBudget: 212270,
+    confirmedRev: 164400,
+    runRatePL: -47870,
+    breakEvenGap: 47870,
+    arrGap: 335600,
+    bdMonthly: { Screenings: 26, NDAs: 9, Agreements: 9, Meetings: 9, NewPipelineOpps: 4 },
+  },
+  revenue: [],
+  expenses: [],
+  meetings: [],
+  pipeline: [],
+  screenings: [],
+  ndas: [],
+  agreements: [],
+  activeProjects: [],
+};
+
+// ============================================================
+// UTILITY: Date math
+// ============================================================
+function dayMs() { return 24 * 60 * 60 * 1000; }
+function daysAdd(d, n) { return new Date(d.getFullYear(), d.getMonth(), d.getDate() + n); }
+function asUTCDate(d) { return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+function startOfYear(d) { return new Date(d.getFullYear(), 0, 1); }
+function fmtDate(d) {
+  if (!d || isNaN(d.getTime())) return '—';
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${mm}/${dd}/${d.getFullYear()}`;
+}
+
+// ============================================================
+// UTILITY: Formatters
+// ============================================================
+function fmtCurrency(n) {
+  if (n === null || n === undefined || isNaN(n)) return '—';
+  const sign = n < 0 ? '-' : '';
+  const abs = Math.abs(n);
+  return `${sign}$${Math.round(abs).toLocaleString()}`;
+}
+function fmtCurrencyShort(n) {
+  if (n === null || n === undefined || isNaN(n)) return '—';
+  const abs = Math.abs(n);
+  const sign = n < 0 ? '-' : '';
+  if (abs >= 1e6) return `${sign}$${(abs/1e6).toFixed(1)}M`;
+  if (abs >= 1e3) return `${sign}$${(abs/1e3).toFixed(0)}K`;
+  return `${sign}$${Math.round(abs)}`;
+}
+function fmtCount(n) {
+  if (n === null || n === undefined || isNaN(n)) return '—';
+  return Math.round(n).toLocaleString();
+}
+function fmtPct(n) {
+  if (n === null || n === undefined || isNaN(n) || !isFinite(n)) return '—';
+  const sign = n > 0 ? '+' : '';
+  return `${sign}${(n*100).toFixed(1)}%`;
+}
+
+// ============================================================
+// TRAILING WINDOW COMPUTATIONS
+// ============================================================
+function trailingCount(rows, dateField, daysBack, offset = 0) {
+  const asOf = STATE.asOfDate;
+  const hi = daysAdd(asOf, -offset);
+  const lo = daysAdd(asOf, -(daysBack + offset));
+  let count = 0;
+  for (const r of rows) {
+    const d = r[dateField];
+    if (!d || !(d instanceof Date) || isNaN(d.getTime())) continue;
+    if (offset === 0 ? (d >= lo && d <= hi) : (d >= lo && d < hi)) count++;
+  }
+  return count;
+}
+
+function trailingSum(rows, sumField, dateField, daysBack, offset = 0) {
+  const asOf = STATE.asOfDate;
+  const hi = daysAdd(asOf, -offset);
+  const lo = daysAdd(asOf, -(daysBack + offset));
+  let sum = 0;
+  for (const r of rows) {
+    const d = r[dateField];
+    if (!d || !(d instanceof Date) || isNaN(d.getTime())) continue;
+    if (offset === 0 ? (d >= lo && d <= hi) : (d >= lo && d < hi)) {
+      const v = r[sumField];
+      if (typeof v === 'number' && !isNaN(v)) sum += v;
+    }
+  }
+  return sum;
+}
+
+function ytdSum(rows, sumField, dateField) {
+  const asOf = STATE.asOfDate;
+  const soy = startOfYear(asOf);
+  let sum = 0;
+  for (const r of rows) {
+    const d = r[dateField];
+    if (!d || !(d instanceof Date) || isNaN(d.getTime())) continue;
+    if (d >= soy && d <= asOf) {
+      const v = r[sumField];
+      if (typeof v === 'number' && !isNaN(v)) sum += v;
+    }
+  }
+  return sum;
+}
+
+function ytdCount(rows, dateField) {
+  const asOf = STATE.asOfDate;
+  const soy = startOfYear(asOf);
+  let count = 0;
+  for (const r of rows) {
+    const d = r[dateField];
+    if (!d || !(d instanceof Date) || isNaN(d.getTime())) continue;
+    if (d >= soy && d <= asOf) count++;
+  }
+  return count;
+}
+
+function deltaPct(curr, prior) {
+  if (prior === 0 || prior === null || prior === undefined) return null;
+  return (curr - prior) / prior;
+}
+
+// ============================================================
+// SPARKLINE RENDERER (SVG)
+// ============================================================
+function renderSparkline(rows, dateField, weeks = 13) {
+  // Bucket activity into N weekly buckets ending at asOfDate
+  const buckets = new Array(weeks).fill(0);
+  const asOf = STATE.asOfDate;
+  for (const r of rows) {
+    const d = r[dateField];
+    if (!d || !(d instanceof Date) || isNaN(d.getTime())) continue;
+    const daysAgo = Math.floor((asUTCDate(asOf) - asUTCDate(d)) / dayMs());
+    if (daysAgo < 0 || daysAgo >= weeks * 7) continue;
+    const bucketIdx = (weeks - 1) - Math.floor(daysAgo / 7);
+    if (bucketIdx >= 0 && bucketIdx < weeks) buckets[bucketIdx]++;
+  }
+
+  const maxVal = Math.max(1, ...buckets);
+  const W = 120, H = 30;
+  const barW = W / weeks;
+  const padding = 1.5;
+
+  let bars = '';
+  buckets.forEach((v, i) => {
+    const h = Math.max(1, (v / maxVal) * (H - 4));
+    const x = i * barW + padding;
+    const y = H - h - 1;
+    const w = barW - padding * 2;
+    const isLast = i === weeks - 1;
+    const color = isLast ? '#2EA891' : '#232D5A';
+    const opacity = isLast ? 1 : 0.42;
+    bars += `<rect x="${x.toFixed(2)}" y="${y.toFixed(2)}" width="${w.toFixed(2)}" height="${h.toFixed(2)}" fill="${color}" opacity="${opacity}" rx="0.5"/>`;
+  });
+
+  // Add baseline
+  bars += `<line x1="0" y1="${H-0.5}" x2="${W}" y2="${H-0.5}" stroke="#E2E5EC" stroke-width="0.5"/>`;
+
+  return `<svg class="sparkline" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${bars}</svg>`;
+}
+
+// ============================================================
+// WORKBOOK PARSING
+// ============================================================
+function excelDateToJS(serial) {
+  if (typeof serial === 'object' && serial instanceof Date) return serial;
+  if (typeof serial !== 'number') {
+    // Try parsing as date string
+    if (typeof serial === 'string' && serial.trim()) {
+      const d = new Date(serial);
+      if (!isNaN(d.getTime())) return d;
+    }
+    return null;
+  }
+  // Excel serial date
+  const utc_days = Math.floor(serial - 25569);
+  const utc_value = utc_days * 86400;
+  const date_info = new Date(utc_value * 1000);
+  return new Date(date_info.getFullYear(), date_info.getMonth(), date_info.getDate());
+}
+
+function parseWorkbook(workbook) {
+  const data = JSON.parse(JSON.stringify(DEFAULTS));  // deep clone defaults
+
+  // Helper to read a sheet starting at headerRow, mapping columns
+  function readSheet(sheetName, headerRow, columnMap) {
+    if (!workbook.SheetNames.includes(sheetName)) return [];
+    const ws = workbook.Sheets[sheetName];
+    const range = XLSX.utils.decode_range(ws['!ref']);
+    const rows = [];
+    for (let R = headerRow; R <= range.e.r; R++) {
+      const row = {};
+      let hasData = false;
+      for (const [field, col] of Object.entries(columnMap)) {
+        const cellAddr = XLSX.utils.encode_cell({ r: R, c: col });
+        const cell = ws[cellAddr];
+        if (cell !== undefined && cell.v !== undefined && cell.v !== '') {
+          row[field] = cell.v;
+          hasData = true;
+        } else {
+          row[field] = null;
+        }
+      }
+      if (hasData && row[Object.keys(columnMap)[0]] !== null) rows.push(row);
+    }
+    return rows;
+  }
+
+  function getCell(sheetName, cellRef) {
+    if (!workbook.SheetNames.includes(sheetName)) return null;
+    const ws = workbook.Sheets[sheetName];
+    const cell = ws[cellRef];
+    return cell ? cell.v : null;
+  }
+
+  // ----- Targets -----
+  const arrTarget = getCell('Targets', 'C5');
+  const expBudget = getCell('Targets', 'C6');
+  const confirmed = getCell('Targets', 'C11');
+  const runRate   = getCell('Targets', 'C12');
+  const beGap     = getCell('Targets', 'C13');
+  const arrGap    = getCell('Targets', 'C14');
+
+  if (arrTarget) data.targets.arrTarget = arrTarget;
+  if (expBudget) data.targets.expenseBudget = expBudget;
+  if (confirmed) data.targets.confirmedRev = confirmed;
+  if (runRate !== null && runRate !== undefined) data.targets.runRatePL = runRate;
+  if (beGap !== null && beGap !== undefined) data.targets.breakEvenGap = beGap;
+  if (arrGap !== null && arrGap !== undefined) data.targets.arrGap = arrGap;
+
+  // BD monthly targets at column D, rows 34-38
+  const bdMonths = {
+    Screenings: getCell('Targets', 'D34'),
+    NDAs: getCell('Targets', 'D35'),
+    Agreements: getCell('Targets', 'D36'),
+    Meetings: getCell('Targets', 'D37'),
+    NewPipelineOpps: getCell('Targets', 'D38'),
+  };
+  for (const [k, v] of Object.entries(bdMonths)) {
+    if (typeof v === 'number') data.targets.bdMonthly[k] = v;
+  }
+
+  // ----- Revenue_Ledger: A=Date, B=Client, C=Contract, D=InvNum, E=Amount, F=Paid, G=PayDate, H=Notes -----
+  const revRaw = readSheet('Revenue_Ledger', 4, {
+    date: 0, client: 1, contract: 2, invoice: 3, amount: 4, paid: 5, paidDate: 6, notes: 7
+  });
+  data.revenue = revRaw.map(r => ({
+    ...r,
+    date: excelDateToJS(r.date),
+    paidDate: r.paidDate ? excelDateToJS(r.paidDate) : null,
+  })).filter(r => r.date);
+
+  // ----- Expense_Ledger: A=Date, B=Cat, C=Sub, D=Amount, E=Vendor, F=Notes -----
+  const expRaw = readSheet('Expense_Ledger', 4, {
+    date: 0, category: 1, subCategory: 2, amount: 3, vendor: 4, notes: 5
+  });
+  data.expenses = expRaw.map(r => ({ ...r, date: excelDateToJS(r.date) })).filter(r => r.date);
+
+  // ----- Meetings: A=Date, B=Partner, C=Attendees, D=Type, E=Outcome, F=NextStep, G=Owner -----
+  const meetRaw = readSheet('Meetings', 4, {
+    date: 0, partner: 1, attendees: 2, type: 3, outcome: 4, nextStep: 5, owner: 6
+  });
+  data.meetings = meetRaw.map(r => ({ ...r, date: excelDateToJS(r.date) })).filter(r => r.date);
+
+  // ----- Pipeline: A=ID, B=Name, C=Client, D=NAICS, E=Stage, F=Value, G=Identified, H=StageDate, I=Owner, J=Notes -----
+  const pipeRaw = readSheet('Pipeline', 4, {
+    id: 0, name: 1, client: 2, naics: 3, stage: 4, value: 5,
+    identified: 6, stageDate: 7, owner: 8, notes: 9
+  });
+  data.pipeline = pipeRaw.map(r => ({
+    ...r,
+    identified: r.identified ? excelDateToJS(r.identified) : null,
+    stageDate: r.stageDate ? excelDateToJS(r.stageDate) : null,
+  })).filter(r => r.id);
+
+  // ----- Active_Projects: A=ID, B=Name, C=Client, D=Type, E=Value, F=Start, G=End, H=Status, I=%, J=PM -----
+  const projRaw = readSheet('Active_Projects', 4, {
+    id: 0, name: 1, client: 2, type: 3, value: 4,
+    start: 5, end: 6, status: 7, complete: 8, pm: 9
+  });
+  data.activeProjects = projRaw.map(r => ({
+    ...r,
+    start: r.start ? excelDateToJS(r.start) : null,
+    end: r.end ? excelDateToJS(r.end) : null,
+  })).filter(r => r.id);
+
+  // ----- Screenings: A=#, B=Co, C=Contact, D=SetAside, E=ScreenDateNorm, F=NDADate, G=Vertical, H=Classification -----
+  const scrnRaw = readSheet('Screenings', 4, {
+    num: 0, company: 1, contact: 2, setAside: 3, date: 4,
+    ndaDate: 5, vertical: 6, classification: 7
+  });
+  data.screenings = scrnRaw.map(r => ({
+    ...r,
+    date: excelDateToJS(r.date),
+    ndaDate: r.ndaDate ? excelDateToJS(r.ndaDate) : null,
+  })).filter(r => r.date && r.company);
+
+  // ----- NDAs: A=#, B=Entity, C=Contact, D=Date, E=File, F=Status, G=Classification -----
+  const ndaRaw = readSheet('NDAs', 4, {
+    num: 0, entity: 1, contact: 2, date: 3, filename: 4, status: 5, classification: 6
+  });
+  data.ndas = ndaRaw.map(r => ({ ...r, date: excelDateToJS(r.date) })).filter(r => r.date && r.entity);
+
+  // ----- Agreements: A=#, B=Party, C=Contact, D=Date, E=Type, F=File, G=Status, H=Notes -----
+  const agrRaw = readSheet('Agreements', 4, {
+    num: 0, party: 1, contact: 2, date: 3, type: 4, filename: 5, status: 6, notes: 7
+  });
+  data.agreements = agrRaw.map(r => ({ ...r, date: excelDateToJS(r.date) })).filter(r => r.date && r.party);
+
+  return data;
+}
+
+// ============================================================
+// RENDERING — FINANCIAL HEADLINES
+// ============================================================
+function renderFinancialHeadlines() {
+  const d = STATE.data;
+  const t = d.targets;
+  const ytdRevenue = ytdSum(d.revenue, 'amount', 'date');
+
+  const cards = [
+    {
+      label: 'Year-1 ARR Target', value: fmtCurrency(t.arrTarget),
+      accent: 'gold', sub: 'Annualized recurring revenue goal',
+      drill: { type: 'targetBreakdown' }
+    },
+    {
+      label: 'Revenue Booked YTD', value: fmtCurrency(ytdRevenue),
+      accent: 'teal', sub: `${d.revenue.length} invoices issued`,
+      drill: { type: 'revenue' }
+    },
+    {
+      label: 'Run-Rate P/L (current)', value: fmtCurrency(t.runRatePL),
+      accent: t.runRatePL < 0 ? 'red' : 'teal',
+      sub: 'Confirmed revenue vs annual expense budget',
+      valueClass: t.runRatePL < 0 ? 'negative' : 'positive',
+      drill: { type: 'plBreakdown' }
+    },
+    {
+      label: 'Gap to Break-Even', value: fmtCurrency(t.breakEvenGap),
+      accent: 'amber', sub: 'New revenue needed to stop losing money',
+      drill: { type: 'plBreakdown' }
+    },
+    {
+      label: 'Gap to ARR Target', value: fmtCurrency(t.arrGap),
+      accent: 'amber', sub: 'New business needed to hit Y1 ARR',
+      drill: { type: 'pipeline' }
+    },
+  ];
+
+  const container = document.getElementById('financial-headlines');
+  container.innerHTML = cards.map(c => `
+    <div class="kpi-card accent-${c.accent}" data-drill='${JSON.stringify(c.drill)}'>
+      <div class="kpi-label">${c.label}</div>
+      <div class="kpi-value ${c.valueClass || ''}">${c.value}</div>
+      <div class="kpi-sub">${c.sub}</div>
+      <div class="kpi-drill-hint">Click to drill</div>
+    </div>
+  `).join('');
+
+  attachDrillHandlers(container);
+}
+
+// ============================================================
+// RENDERING — OPERATIONS HEADLINES
+// ============================================================
+function renderOperationsHeadlines() {
+  const d = STATE.data;
+  const activePipeline = d.pipeline.filter(p => p.stage && p.stage !== 'Awarded' && p.stage !== 'Lost' && p.stage !== 'No-Bid');
+  const activePipelineValue = activePipeline.reduce((sum, p) => sum + (p.value || 0), 0);
+  const activeProjects = d.activeProjects.filter(p => p.status === 'Active').length;
+  const ndasYTD = ytdCount(d.ndas, 'date');
+
+  const cards = [
+    {
+      label: 'Active Pipeline (#)', value: fmtCount(activePipeline.length),
+      accent: 'teal', sub: `Target: 20 active opps steady-state`,
+      drill: { type: 'pipeline' }
+    },
+    {
+      label: 'Active Pipeline ($)', value: fmtCurrencyShort(activePipelineValue),
+      accent: 'teal', sub: `Total contract value in pipeline`,
+      drill: { type: 'pipeline' }
+    },
+    {
+      label: 'Active Projects', value: fmtCount(activeProjects),
+      accent: '', sub: `Post-award delivery`,
+      drill: { type: 'projects' }
+    },
+    {
+      label: 'NDAs Executed YTD', value: fmtCount(ndasYTD),
+      accent: 'gold', sub: `Partner ecosystem expansion`,
+      drill: { type: 'ndas' }
+    },
+  ];
+
+  const container = document.getElementById('operations-headlines');
+  container.innerHTML = cards.map(c => `
+    <div class="kpi-card accent-${c.accent}" data-drill='${JSON.stringify(c.drill)}'>
+      <div class="kpi-label">${c.label}</div>
+      <div class="kpi-value">${c.value}</div>
+      <div class="kpi-sub">${c.sub}</div>
+      <div class="kpi-drill-hint">Click to drill</div>
+    </div>
+  `).join('');
+
+  attachDrillHandlers(container);
+}
+
+// ============================================================
+// RENDERING — BD CADENCE TABLE
+// ============================================================
+function renderBDCadence() {
+  const d = STATE.data;
+  const specs = [
+    { label: 'Screenings',         rows: d.screenings, target: d.targets.bdMonthly.Screenings, drillType: 'screenings' },
+    { label: 'NDAs',               rows: d.ndas,       target: d.targets.bdMonthly.NDAs,       drillType: 'ndas' },
+    { label: 'Agreements',         rows: d.agreements, target: d.targets.bdMonthly.Agreements, drillType: 'agreements' },
+    { label: 'Meetings',           rows: d.meetings,   target: d.targets.bdMonthly.Meetings,   drillType: 'meetings' },
+    { label: 'New Pipeline Opps',  rows: d.pipeline,   target: d.targets.bdMonthly.NewPipelineOpps, drillType: 'pipeline', dateField: 'identified' },
+  ];
+
+  const tbody = document.getElementById('bd-cadence-body');
+  tbody.innerHTML = specs.map(s => {
+    const df = s.dateField || 'date';
+    const t7   = trailingCount(s.rows, df, 7, 0);
+    const p7   = trailingCount(s.rows, df, 7, 7);
+    const t30  = trailingCount(s.rows, df, 30, 0);
+    const wow  = deltaPct(t7, p7);
+    const vt   = s.target ? (t30 - s.target) / s.target : null;
+    const spark= renderSparkline(s.rows, df, 13);
+
+    return `
+      <tr data-drill='${JSON.stringify({type: s.drillType})}'>
+        <td class="kpi-name">${s.label}</td>
+        <td>${fmtCount(t7)}</td>
+        <td>${fmtCount(p7)}</td>
+        <td class="delta ${deltaClass(wow)}">${fmtPct(wow)}</td>
+        <td>${fmtCount(t30)}</td>
+        <td class="delta ${deltaClass(vt)}">${fmtPct(vt)}</td>
+        <td class="sparkline-cell">${spark}</td>
+      </tr>
+    `;
+  }).join('');
+  attachDrillHandlers(tbody);
+}
+
+function deltaClass(v) {
+  if (v === null || v === undefined || isNaN(v)) return 'flat';
+  if (v > 0.001) return 'pos';
+  if (v < -0.001) return 'neg';
+  return 'flat';
+}
+
+// ============================================================
+// RENDERING — FINANCIAL CADENCE TABLE
+// ============================================================
+function renderFinancialCadence() {
+  const d = STATE.data;
+  const t = d.targets;
+
+  // Revenue actuals
+  const rev = {
+    t7:   trailingSum(d.revenue, 'amount', 'date', 7, 0),
+    p7:   trailingSum(d.revenue, 'amount', 'date', 7, 7),
+    t30:  trailingSum(d.revenue, 'amount', 'date', 30, 0),
+    t91:  trailingSum(d.revenue, 'amount', 'date', 91, 0),
+    ytd:  ytdSum(d.revenue, 'amount', 'date'),
+  };
+  // Expense actuals
+  const exp = {
+    t7:   trailingSum(d.expenses, 'amount', 'date', 7, 0),
+    p7:   trailingSum(d.expenses, 'amount', 'date', 7, 7),
+    t30:  trailingSum(d.expenses, 'amount', 'date', 30, 0),
+    t91:  trailingSum(d.expenses, 'amount', 'date', 91, 0),
+    ytd:  ytdSum(d.expenses, 'amount', 'date'),
+  };
+  // P/L actuals
+  const pl = {
+    t7:  rev.t7  - exp.t7,
+    p7:  rev.p7  - exp.p7,
+    t30: rev.t30 - exp.t30,
+    t91: rev.t91 - exp.t91,
+    ytd: rev.ytd - exp.ytd,
+  };
+
+  // Budgeted expenses (annual budget pro-rated by days)
+  const bud = (days) => (t.expenseBudget / 365) * days;
+  const asOf = STATE.asOfDate;
+  const soy = startOfYear(asOf);
+  const ytdDays = Math.floor((asUTCDate(asOf) - asUTCDate(soy)) / dayMs()) + 1;
+
+  const budExp = {
+    t7: bud(7), p7: bud(7), t30: bud(30), t91: bud(91), ytd: bud(ytdDays),
+  };
+  const budPL = {
+    t7:  rev.t7  - budExp.t7,
+    p7:  rev.p7  - budExp.p7,
+    t30: rev.t30 - budExp.t30,
+    t91: rev.t91 - budExp.t91,
+    ytd: rev.ytd - budExp.ytd,
+  };
+
+  const tbody = document.getElementById('fin-cadence-body');
+  const wowRev = deltaPct(rev.t7, rev.p7);
+  const wowPL = deltaPct(pl.t7, pl.p7);
+  const wowBudPL = deltaPct(budPL.t7, budPL.p7);
+
+  tbody.innerHTML = `
+    <tr>
+      <td>Revenue ($) — actual</td>
+      <td>${fmtCurrency(rev.t7)}</td>
+      <td>${fmtCurrency(rev.p7)}</td>
+      <td class="delta-cell ${deltaClass(wowRev)}">${fmtPct(wowRev)}</td>
+      <td>${fmtCurrency(rev.t30)}</td>
+      <td>${fmtCurrency(rev.t91)}</td>
+      <td>${fmtCurrency(rev.ytd)}</td>
+    </tr>
+    <tr>
+      <td>Expenses ($) — actual</td>
+      <td>${fmtCurrency(exp.t7)}</td>
+      <td>${fmtCurrency(exp.p7)}</td>
+      <td class="delta-cell flat">—</td>
+      <td>${fmtCurrency(exp.t30)}</td>
+      <td>${fmtCurrency(exp.t91)}</td>
+      <td>${fmtCurrency(exp.ytd)}</td>
+    </tr>
+    <tr>
+      <td>Net P/L ($) — actuals only</td>
+      <td>${fmtCurrency(pl.t7)}</td>
+      <td>${fmtCurrency(pl.p7)}</td>
+      <td class="delta-cell ${deltaClass(wowPL)}">${fmtPct(wowPL)}</td>
+      <td>${fmtCurrency(pl.t30)}</td>
+      <td>${fmtCurrency(pl.t91)}</td>
+      <td>${fmtCurrency(pl.ytd)}</td>
+    </tr>
+    <tr class="budgeted">
+      <td>Expenses ($) — budgeted</td>
+      <td>${fmtCurrency(budExp.t7)}</td>
+      <td>${fmtCurrency(budExp.p7)}</td>
+      <td class="delta-cell flat">—</td>
+      <td>${fmtCurrency(budExp.t30)}</td>
+      <td>${fmtCurrency(budExp.t91)}</td>
+      <td>${fmtCurrency(budExp.ytd)}</td>
+    </tr>
+    <tr class="budgeted">
+      <td>Net P/L ($) — rev vs budget</td>
+      <td>${fmtCurrency(budPL.t7)}</td>
+      <td>${fmtCurrency(budPL.p7)}</td>
+      <td class="delta-cell ${deltaClass(wowBudPL)}">${fmtPct(wowBudPL)}</td>
+      <td>${fmtCurrency(budPL.t30)}</td>
+      <td>${fmtCurrency(budPL.t91)}</td>
+      <td>${fmtCurrency(budPL.ytd)}</td>
+    </tr>
+  `;
+}
+
+// ============================================================
+// RENDERING — PIPELINE TABLE
+// ============================================================
+function renderPipeline() {
+  const d = STATE.data;
+  const active = d.pipeline.filter(p => p.stage !== 'Awarded' && p.stage !== 'Lost' && p.stage !== 'No-Bid');
+  const tbody = document.getElementById('pipeline-body');
+  if (active.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; padding:24px; color:var(--text-3);">No active pipeline opportunities</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = active.map(opp => `
+    <tr data-drill='${JSON.stringify({type: 'pipeline', oppId: opp.id})}'>
+      <td>
+        <div class="opp-name">${opp.name || opp.id}</div>
+        <div class="opp-meta">${opp.client || ''} · ${opp.naics || ''}</div>
+      </td>
+      <td><span class="stage-pill stage-${opp.stage}">${opp.stage}</span></td>
+      <td class="right">${fmtCurrencyShort(opp.value)}</td>
+    </tr>
+  `).join('');
+  attachDrillHandlers(tbody);
+}
+
+// ============================================================
+// RENDERING — SCENARIO MODE
+// ============================================================
+function computeScenario(winRate, y1Pct) {
+  const d = STATE.data;
+  const t = d.targets;
+  const active = d.pipeline.filter(p => p.stage !== 'Awarded' && p.stage !== 'Lost' && p.stage !== 'No-Bid');
+  const pipelineTCV = active.reduce((s, p) => s + (p.value || 0), 0);
+  const expectedTCV = pipelineTCV * winRate;
+  const y1Contribution = expectedTCV * y1Pct;
+  const totalY1ARR = t.confirmedRev + y1Contribution;
+  const projectedPL = totalY1ARR - t.expenseBudget;
+  return { pipelineTCV, expectedTCV, y1Contribution, totalY1ARR, projectedPL };
+}
+
+function renderScenario() {
+  const { winRate, y1Pct, cycle } = STATE.scenario;
+  const result = computeScenario(winRate, y1Pct);
+
+  // Result tiles
+  const tiles = [
+    { label: 'Expected Wins (TCV)', value: fmtCurrencyShort(result.expectedTCV) },
+    { label: 'Y1 Revenue from Wins', value: fmtCurrencyShort(result.y1Contribution) },
+    { label: 'Total Y1 ARR (proj.)',  value: fmtCurrencyShort(result.totalY1ARR) },
+    { label: 'Projected Y1 P/L',
+      value: fmtCurrencyShort(result.projectedPL),
+      valueClass: result.projectedPL < 0 ? 'negative' : 'positive' },
+  ];
+
+  document.getElementById('scenario-results').innerHTML = tiles.map(t => `
+    <div class="result-tile">
+      <div class="result-label">${t.label}</div>
+      <div class="result-value ${t.valueClass || ''}">${t.value}</div>
+    </div>
+  `).join('');
+
+  // Sensitivity table
+  const rates = [0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.40, 0.50];
+  const activeRate = Math.round(winRate * 100);
+  let tbl = '<thead><tr><th>Win Rate</th><th>Expected TCV</th><th>Y1 Revenue</th><th>Y1 P/L</th></tr></thead><tbody>';
+  for (const r of rates) {
+    const s = computeScenario(r, y1Pct);
+    const rPct = Math.round(r * 100);
+    const isActive = rPct === activeRate;
+    const plCls = s.projectedPL < 0 ? 'cell-neg' : 'cell-pos';
+    tbl += `<tr class="${isActive ? 'active' : ''}">
+      <td>${rPct}%</td>
+      <td>${fmtCurrencyShort(s.expectedTCV)}</td>
+      <td>${fmtCurrencyShort(s.y1Contribution)}</td>
+      <td class="${plCls}">${fmtCurrencyShort(s.projectedPL)}</td>
+    </tr>`;
+  }
+  tbl += '</tbody>';
+  document.getElementById('sensitivity-table').innerHTML = tbl;
+}
+
+// ============================================================
+// DRILL-DOWN MODAL
+// ============================================================
+function attachDrillHandlers(container) {
+  container.querySelectorAll('[data-drill]').forEach(el => {
+    el.addEventListener('click', (e) => {
+      const drill = JSON.parse(el.dataset.drill);
+      openDrill(drill);
+    });
+  });
+}
+
+function openDrill(drill) {
+  const d = STATE.data;
+  let title = '', subtitle = '', body = '';
+
+  switch (drill.type) {
+    case 'revenue':
+      title = 'Revenue Ledger';
+      subtitle = `${d.revenue.length} invoices · YTD ${fmtCurrency(ytdSum(d.revenue, 'amount', 'date'))}`;
+      body = renderRevenueTable(d.revenue);
+      break;
+    case 'pipeline':
+      title = 'Pipeline — Active Opportunities';
+      const active = d.pipeline.filter(p => p.stage !== 'Awarded' && p.stage !== 'Lost' && p.stage !== 'No-Bid');
+      const total = active.reduce((s,p) => s + (p.value||0), 0);
+      subtitle = `${active.length} active opps · TCV ${fmtCurrencyShort(total)}`;
+      body = renderPipelineTable(active);
+      break;
+    case 'projects':
+      title = 'Active Projects';
+      subtitle = `${d.activeProjects.length} projects on record`;
+      body = renderProjectsTable(d.activeProjects);
+      break;
+    case 'ndas':
+      title = 'Executed NDAs';
+      subtitle = `${d.ndas.length} NDAs · ${ytdCount(d.ndas, 'date')} YTD`;
+      body = renderNDATable(d.ndas);
+      break;
+    case 'agreements':
+      title = 'Teaming & Commission Agreements';
+      subtitle = `${d.agreements.length} agreements on record`;
+      body = renderAgreementsTable(d.agreements);
+      break;
+    case 'meetings':
+      title = 'Meetings Log';
+      subtitle = `${d.meetings.length} total · ${ytdCount(d.meetings, 'date')} YTD`;
+      body = renderMeetingsTable(d.meetings);
+      break;
+    case 'screenings':
+      title = 'Partner Screenings';
+      subtitle = `${d.screenings.length} entities screened`;
+      body = renderScreeningsTable(d.screenings);
+      break;
+    case 'targetBreakdown':
+      title = 'ARR Target Breakdown';
+      subtitle = 'Composition of Year-1 Annual Recurring Revenue goal';
+      body = renderTargetBreakdown();
+      break;
+    case 'plBreakdown':
+      title = 'P/L Reconciliation — Income Statement Bottom Line';
+      subtitle = 'How current confirmed revenue × annual expense budget produces –$47,870';
+      body = renderPLBreakdown();
+      break;
+  }
+
+  document.getElementById('modal-title').textContent = title;
+  document.getElementById('modal-subtitle').textContent = subtitle;
+  document.getElementById('modal-body').innerHTML = body;
+  document.getElementById('modal').classList.add('open');
+}
+
+function closeDrill() {
+  document.getElementById('modal').classList.remove('open');
+}
+
+// ----- Drill table renderers -----
+function renderRevenueTable(rows) {
+  const sorted = [...rows].sort((a, b) => b.date - a.date);
+  return `<table class="drill-table">
+    <thead><tr>
+      <th>Date</th><th>Client</th><th>Contract</th><th>Invoice</th>
+      <th class="right">Amount</th><th class="right">Paid</th><th>Payment</th>
+    </tr></thead><tbody>
+    ${sorted.map(r => `<tr>
+      <td>${fmtDate(r.date)}</td>
+      <td>${r.client || ''}</td>
+      <td>${r.contract || ''}</td>
+      <td>${r.invoice || ''}</td>
+      <td class="right">${fmtCurrency(r.amount)}</td>
+      <td class="right">${r.paid ? fmtCurrency(r.paid) : '—'}</td>
+      <td>${r.paidDate ? fmtDate(r.paidDate) : 'Pending'}</td>
+    </tr>`).join('')}
+    </tbody></table>`;
+}
+
+function renderPipelineTable(rows) {
+  return `<table class="drill-table">
+    <thead><tr>
+      <th>Opp ID</th><th>Name</th><th>Client</th><th>NAICS</th>
+      <th>Stage</th><th class="right">Value</th><th>Identified</th>
+    </tr></thead><tbody>
+    ${rows.map(r => `<tr>
+      <td>${r.id || ''}</td>
+      <td>${r.name || ''}</td>
+      <td>${r.client || ''}</td>
+      <td>${r.naics || ''}</td>
+      <td><span class="stage-pill stage-${r.stage}">${r.stage}</span></td>
+      <td class="right">${fmtCurrencyShort(r.value)}</td>
+      <td>${r.identified ? fmtDate(r.identified) : '—'}</td>
+    </tr>`).join('')}
+    </tbody></table>`;
+}
+
+function renderProjectsTable(rows) {
+  if (rows.length === 0) return `<div style="padding:30px; text-align:center; color:var(--text-3);">No active projects logged. Add rows to Active_Projects sheet to populate.</div>`;
+  return `<table class="drill-table">
+    <thead><tr>
+      <th>ID</th><th>Project</th><th>Client</th><th>Type</th>
+      <th class="right">Value</th><th>Start</th><th>End</th><th>Status</th>
+    </tr></thead><tbody>
+    ${rows.map(r => `<tr>
+      <td>${r.id || ''}</td>
+      <td>${r.name || ''}</td>
+      <td>${r.client || ''}</td>
+      <td>${r.type || ''}</td>
+      <td class="right">${fmtCurrencyShort(r.value)}</td>
+      <td>${r.start ? fmtDate(r.start) : '—'}</td>
+      <td>${r.end ? fmtDate(r.end) : '—'}</td>
+      <td>${r.status || ''}</td>
+    </tr>`).join('')}
+    </tbody></table>`;
+}
+
+function renderNDATable(rows) {
+  const sorted = [...rows].sort((a, b) => b.date - a.date);
+  return `<table class="drill-table">
+    <thead><tr>
+      <th>#</th><th>Entity</th><th>Contact</th><th>Date</th><th>Status</th><th>Classification</th>
+    </tr></thead><tbody>
+    ${sorted.map(r => `<tr>
+      <td>${r.num || ''}</td>
+      <td>${r.entity || ''}</td>
+      <td>${r.contact || ''}</td>
+      <td>${fmtDate(r.date)}</td>
+      <td>${r.status || ''}</td>
+      <td>${r.classification ? `<span class="classification-pill class-${r.classification}">${r.classification}</span>` : ''}</td>
+    </tr>`).join('')}
+    </tbody></table>`;
+}
+
+function renderAgreementsTable(rows) {
+  const sorted = [...rows].sort((a, b) => b.date - a.date);
+  return `<table class="drill-table">
+    <thead><tr>
+      <th>#</th><th>Party</th><th>Contact</th><th>Date</th><th>Type</th><th>Status</th>
+    </tr></thead><tbody>
+    ${sorted.map(r => `<tr>
+      <td>${r.num || ''}</td>
+      <td>${r.party || ''}</td>
+      <td>${r.contact || ''}</td>
+      <td>${fmtDate(r.date)}</td>
+      <td>${r.type || ''}</td>
+      <td>${r.status || ''}</td>
+    </tr>`).join('')}
+    </tbody></table>`;
+}
+
+function renderMeetingsTable(rows) {
+  const sorted = [...rows].sort((a, b) => b.date - a.date);
+  return `<table class="drill-table">
+    <thead><tr>
+      <th>Date</th><th>Partner</th><th>Type</th><th>Outcome</th><th>Next Step</th>
+    </tr></thead><tbody>
+    ${sorted.map(r => `<tr>
+      <td>${fmtDate(r.date)}</td>
+      <td>${r.partner || ''}</td>
+      <td>${r.type || ''}</td>
+      <td style="max-width:340px;">${r.outcome || ''}</td>
+      <td>${r.nextStep || ''}</td>
+    </tr>`).join('')}
+    </tbody></table>`;
+}
+
+function renderScreeningsTable(rows) {
+  const sorted = [...rows].sort((a, b) => b.date - a.date);
+  return `<table class="drill-table">
+    <thead><tr>
+      <th>#</th><th>Company</th><th>Contact</th><th>Set-Aside</th>
+      <th>Screen Date</th><th>NDA Date</th><th>Vertical</th><th>Classification</th>
+    </tr></thead><tbody>
+    ${sorted.map(r => `<tr>
+      <td>${r.num || ''}</td>
+      <td>${r.company || ''}</td>
+      <td>${r.contact || ''}</td>
+      <td>${r.setAside || ''}</td>
+      <td>${fmtDate(r.date)}</td>
+      <td>${r.ndaDate ? fmtDate(r.ndaDate) : '—'}</td>
+      <td>${r.vertical || ''}</td>
+      <td>${r.classification ? `<span class="classification-pill class-${r.classification}">${r.classification}</span>` : ''}</td>
+    </tr>`).join('')}
+    </tbody></table>`;
+}
+
+function renderTargetBreakdown() {
+  const t = STATE.data.targets;
+  return `<table class="drill-table">
+    <tbody>
+      <tr><td><strong>Year-1 ARR Target</strong></td><td class="right"><strong>${fmtCurrency(t.arrTarget)}</strong></td></tr>
+      <tr><td>− Confirmed Revenue: HCPSS</td><td class="right">${fmtCurrency(134400)}</td></tr>
+      <tr><td>− Confirmed Revenue: First Brands Group</td><td class="right">${fmtCurrency(30000)}</td></tr>
+      <tr><td><strong>Subtotal Confirmed</strong></td><td class="right"><strong>${fmtCurrency(t.confirmedRev)}</strong></td></tr>
+      <tr><td><strong>= Gap to ARR Target (must win)</strong></td><td class="right" style="color:var(--red);"><strong>${fmtCurrency(t.arrGap)}</strong></td></tr>
+      <tr><td colspan="2" style="padding-top:14px; color:var(--text-3); font-style:italic;">
+        At 25% pipeline conversion on $${(STATE.data.pipeline.filter(p => p.stage !== 'Awarded' && p.stage !== 'Lost').reduce((s,p) => s + (p.value||0), 0) / 1e6).toFixed(1)}M active pipeline, expected won TCV would be sufficient to cover this gap if Y1 booking percentage exceeds the target gap / (pipeline × win rate).
+      </td></tr>
+    </tbody>
+  </table>`;
+}
+
+function renderPLBreakdown() {
+  const t = STATE.data.targets;
+  return `<table class="drill-table">
+    <tbody>
+      <tr><td>Confirmed Revenue (HCPSS + First Brands)</td><td class="right">${fmtCurrency(t.confirmedRev)}</td></tr>
+      <tr><td>− Yearly Expense Budget</td><td class="right">${fmtCurrency(t.expenseBudget)}</td></tr>
+      <tr style="border-top: 2px solid var(--navy);"><td><strong>= Run-Rate P/L</strong></td><td class="right" style="color:var(--red);"><strong>${fmtCurrency(t.runRatePL)}</strong></td></tr>
+      <tr><td colspan="2" style="padding-top:14px; color:var(--text-3); font-style:italic;">
+        This is the income statement's bottom line. To stop losing money, close ${fmtCurrency(t.breakEvenGap)} of new annual revenue. To hit the $${(t.arrTarget/1000).toFixed(0)}K ARR target, close ${fmtCurrency(t.arrGap)}.
+      </td></tr>
+    </tbody>
+  </table>`;
+}
+
+// ============================================================
+// EVENT HANDLERS
+// ============================================================
+function handleFileSelect(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const status = document.getElementById('file-status');
+  status.textContent = 'Parsing…';
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    try {
+      const data = new Uint8Array(evt.target.result);
+      const workbook = XLSX.read(data, { type: 'array', cellDates: true });
+      STATE.data = parseWorkbook(workbook);
+      status.textContent = `${file.name}`;
+      status.className = 'file-status loaded';
+      renderAll();
+    } catch (err) {
+      console.error(err);
+      status.textContent = `Error: ${err.message}`;
+      status.className = 'file-status';
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function handleAsofChange(e) {
+  const [yyyy, mm, dd] = e.target.value.split('-').map(Number);
+  STATE.asOfDate = new Date(yyyy, mm - 1, dd);
+  renderAll();
+}
+
+function handleScenarioChange() {
+  STATE.scenario.winRate = parseInt(document.getElementById('winrate-slider').value, 10) / 100;
+  STATE.scenario.y1Pct   = parseInt(document.getElementById('y1pct-slider').value, 10) / 100;
+  STATE.scenario.cycle   = parseInt(document.getElementById('cycle-slider').value, 10);
+  document.getElementById('winrate-val').textContent = `${Math.round(STATE.scenario.winRate*100)}%`;
+  document.getElementById('y1pct-val').textContent   = `${Math.round(STATE.scenario.y1Pct*100)}%`;
+  document.getElementById('cycle-val').textContent   = `${STATE.scenario.cycle} mo`;
+  renderScenario();
+}
+
+// ============================================================
+// MAIN RENDER
+// ============================================================
+function renderAll() {
+  renderFinancialHeadlines();
+  renderOperationsHeadlines();
+  renderBDCadence();
+  renderFinancialCadence();
+  renderPipeline();
+  renderScenario();
+}
+
+// ============================================================
+// INIT
+// ============================================================
+function init() {
+  // Initialize with defaults
+  STATE.data = JSON.parse(JSON.stringify(DEFAULTS));
+
+  // Wire events
+  document.getElementById('file-input').addEventListener('change', handleFileSelect);
+  document.getElementById('asof-date').addEventListener('change', handleAsofChange);
+  document.getElementById('winrate-slider').addEventListener('input', handleScenarioChange);
+  document.getElementById('y1pct-slider').addEventListener('input', handleScenarioChange);
+  document.getElementById('cycle-slider').addEventListener('input', handleScenarioChange);
+  document.getElementById('modal-close').addEventListener('click', closeDrill);
+  document.getElementById('modal').addEventListener('click', (e) => {
+    if (e.target.id === 'modal') closeDrill();
+  });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeDrill(); });
+
+  renderAll();
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
+</script>
+
+</body>
+</html>
