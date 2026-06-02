@@ -9,6 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — Branding
+- VBX logo mark + `VISIONBLOX` wordmark in the dashboard header (inline SVG,
+  no external asset — preserves the single-file rule). Mark is a navy tile with
+  a teal+gold "V" chevron and white base block; wordmark accents `BLOX` in gold.
+- Matching inline-SVG favicon in the logo color palette
+- `scripts/verify_parse.js` — headless verifier (CLAUDE.md §9) that replicates
+  the dashboard's `parseWorkbook` + trailing-window math and cross-checks it
+  against the workbook's formula-computed `Metrics_Period` (11 metrics, 0 drift)
+
+### Fixed
+- Renamed the misnamed `download` file to `.gitignore` so `output/` (real-data
+  workbooks) is actually ignored, per Hard Rule #1
+
 ### Planned — Phase 2 (target: v1.1.0)
 - Stage-transition logging on `Pipeline` sheet (track time-in-stage for funnel velocity)
 - Classification change-log on `Screenings` sheet (track partner stage transitions)
