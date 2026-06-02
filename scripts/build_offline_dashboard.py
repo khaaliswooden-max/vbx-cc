@@ -19,6 +19,8 @@ import urllib.request
 
 SRC = "dashboard/VBX_Command_Center_Dashboard.html"
 OUT = "output/VBX_Command_Center_Dashboard_offline.html"
+GUIDE_SRC = "docs/HOW_TO_USE_Offline_Dashboard.md"
+GUIDE_OUT = "output/VBX_Command_Center_Dashboard_offline_HOW-TO-USE.md"
 
 FONTS_CSS_URL = (
     "https://fonts.googleapis.com/css2?"
@@ -93,9 +95,17 @@ def main():
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     open(OUT, "w", encoding="utf-8").write(html)
 
+    # ship the recipient guide alongside the bundle
+    wrote_guide = False
+    if os.path.exists(GUIDE_SRC):
+        open(GUIDE_OUT, "w", encoding="utf-8").write(open(GUIDE_SRC, encoding="utf-8").read())
+        wrote_guide = True
+
     remaining = re.findall(r'(?:src|href)="https?://(?![^"]*data:)[^"]+"', html)
     size_mb = os.path.getsize(OUT) / 1e6
     print(f"\nWrote {OUT}  ({size_mb:.2f} MB)")
+    if wrote_guide:
+        print(f"Wrote {GUIDE_OUT}")
     print(f"Remaining external http refs: {len(remaining)}")
     for r in remaining:
         print("  !", r)

@@ -26,6 +26,8 @@ ROOT = os.path.dirname(HERE)
 OFFLINE = os.path.join(ROOT, "output", "VBX_Command_Center_Dashboard_offline.html")
 WORKBOOK = os.path.join(ROOT, "output", "VBX_Command_Center_v1.xlsx")
 OUT = os.path.join(ROOT, "output", "VBX_Command_Center_Briefing.html")
+GUIDE_SRC = os.path.join(ROOT, "docs", "HOW_TO_USE_Briefing_Snapshot.md")
+GUIDE_OUT = os.path.join(ROOT, "output", "VBX_Command_Center_Briefing_HOW-TO-USE.md")
 
 BOOT_TEMPLATE = """
 <script>
@@ -88,8 +90,38 @@ def main():
     html = head + boot + "\n</body>" + tail
 
     open(OUT, "w", encoding="utf-8").write(html)
+
+    # ship the recipient guide alongside it, with snapshot/as-of dates stamped in
+    if os.path.exists(GUIDE_SRC):
+        guide = open(GUIDE_SRC, encoding="utf-8").read()
+        guide = guide.replace("{{SNAPSHOT_DATE}}", _today())
+        guide = guide.replace("{{ASOF_DATE}}", _asof_date())
+        open(GUIDE_OUT, "w", encoding="utf-8").write(guide)
+        print(f"Wrote {GUIDE_OUT}")
+
     print(f"\nWrote {OUT}  ({os.path.getsize(OUT)/1e6:.2f} MB)")
     print("⚠  Contains real data — share via approved internal channels only; never commit.")
+
+
+def _fmt_date(d):
+    """Format a date as 'Month D, YYYY' without the platform-specific %-d."""
+    return f"{d.strftime('%B')} {d.day}, {d.strftime('%Y')}"
+
+
+def _today():
+    import datetime
+    return _fmt_date(datetime.date.today())
+
+
+def _asof_date():
+    """Read the As-of date the snapshot was built against (Dashboard!C4)."""
+    fallback = "see the As-of date shown top-right in the dashboard"
+    try:
+        from openpyxl import load_workbook
+        v = load_workbook(WORKBOOK, data_only=True)["Dashboard"]["C4"].value
+        return _fmt_date(v) if hasattr(v, "strftime") else fallback
+    except Exception:
+        return fallback
 
 
 if __name__ == "__main__":
