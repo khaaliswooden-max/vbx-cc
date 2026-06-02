@@ -9,11 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added — Branding
-- VBX logo mark + `VISIONBLOX` wordmark in the dashboard header (inline SVG,
-  no external asset — preserves the single-file rule). Mark is a navy tile with
-  a teal+gold "V" chevron and white base block; wordmark accents `BLOX` in gold.
-- Matching inline-SVG favicon in the logo color palette
+### Changed — Brand alignment with visionblox.org (owner-authorized 2026-06-02)
+- Dashboard header now uses the **real Visionblox logo mark** (faceted geometric
+  "V", inline SVG, pixel-identical to the site asset) and the lowercase
+  `visionblox` wordmark in DM Serif Display
+- Adopted the public site's **type system**: DM Serif Display (headline figures),
+  DM Sans (body), JetBrains Mono (technical labels + tabular data), via Google
+  Fonts CDN. Updates CLAUDE.md §4 and Hard Rule #5 (Arial retained as fallback
+  and for Excel artifacts)
+- Restyled chrome to match the site: `// SECTION` mono headers, mono tabular
+  data cells, serif KPI/scenario figures, warm-paper background (`#F5F5F0`),
+  gold `UPLOAD WORKBOOK →` CTA, mono badges/pills/controls
+- Inline-SVG favicon now uses the real logo mark
+
+### Added
 - `scripts/verify_parse.js` — headless verifier (CLAUDE.md §9) that replicates
   the dashboard's `parseWorkbook` + trailing-window math and cross-checks it
   against the workbook's formula-computed `Metrics_Period` (11 metrics, 0 drift)

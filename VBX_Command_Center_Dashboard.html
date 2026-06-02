@@ -4,7 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>VBX Command Center — Operations Dashboard</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='10' fill='%23232D5A'/%3E%3Cpath d='M12 14 L24 33' stroke='%232EA891' stroke-width='6' stroke-linecap='round'/%3E%3Cpath d='M36 14 L24 33' stroke='%23F7B801' stroke-width='6' stroke-linecap='round'/%3E%3Crect x='21' y='33' width='6' height='6' rx='1.5' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20version%3D%221.1%22%20id%3D%22Layer_1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20x%3D%220px%22%20y%3D%220px%22%20width%3D%22100%25%22%20viewBox%3D%220%200%20272%20231%22%20enable-background%3D%22new%200%200%20272%20231%22%20xml%3Aspace%3D%22preserve%22%3E%20%3Cpath%20fill%3D%22%23CEC9E1%22%20opacity%3D%221.000000%22%20stroke%3D%22none%22%20d%3D%22%20M120.531342%2C1.000000%20C120.985779%2C1.200164%20120.971558%2C1.400328%20120.441223%2C1.839226%20C95.320389%2C2.101433%2070.715660%2C2.124906%2046.110931%2C2.148379%20C46.092243%2C1.957002%2046.073551%2C1.765625%2046.027431%2C1.287124%20C70.687561%2C1.000000%2095.375122%2C1.000000%20120.531342%2C1.000000%20z%22%2F%3E%20%3Cpath%20fill%3D%22%23FCE3DA%22%20opacity%3D%221.000000%22%20stroke%3D%22none%22%20d%3D%22%20M152.939529%2C1.859521%20C152.939529%2C1.859521%20152.964935%2C1.429421%20152.982468%2C1.214710%20C177.687561%2C1.000000%20202.375122%2C1.000000%20227.531342%2C1.000000%20C227.989166%2C1.190234%20227.978333%2C1.380469%20227.734543%2C1.852998%20C227.501572%2C2.135293%20227.088455%2C2.201818%20226.616577%2C2.132330%20C201.742966%2C1.995069%20177.341248%2C1.927295%20152.939529%2C1.859521%20z%22%2F%3E%20%3Cpath%20fill%3D%22%23F58E64%22%20opacity%3D%221.000000%22%20stroke%3D%22none%22%20d%3D%22%20M227.088455%2C2.201816%20C227.088455%2C2.201818%20227.501572%2C2.135293%20227.710663%2C2.137809%20C239.055908%2C21.436020%20250.052109%2C40.814857%20261.430786%2C59.966454%20C264.131348%2C64.511833%20264.338837%2C67.838173%20261.513062%2C72.550774%20C250.064331%2C91.644028%20239.138779%2C111.050980%20227.552277%2C131.154068%20C215.158936%2C109.664185%20203.101791%2C88.757271%20191.027100%2C67.145393%20C197.338364%2C55.144104%20203.658401%2C43.842854%20209.998581%2C32.552902%20C215.683701%2C22.429411%20221.390961%2C12.318354%20227.088455%2C2.201816%20z%22%2F%3E%20%3Cpath%20fill%3D%22%2364C4A8%22%20opacity%3D%221.000000%22%20stroke%3D%22none%22%20d%3D%22%20M137.974426%2C159.840820%20C150.172348%2C138.546188%20162.370255%2C117.251572%20175.019333%2C95.169342%20C176.484909%2C97.501884%20177.541351%2C99.073044%20178.488464%2C100.707558%20C188.902695%2C118.680489%20199.375824%2C136.620453%20209.582108%2C154.710892%20C210.582458%2C156.484009%20210.830826%2C159.717072%20209.880646%2C161.397324%20C198.266617%2C181.934967%20186.363129%2C202.308914%20173.866196%2C222.859848%20C172.260361%2C221.903900%20171.106720%2C220.934235%20170.418991%2C219.704102%20C163.539062%2C207.397827%20156.671387%2C195.083725%20149.934830%2C182.698624%20C145.826477%2C175.145477%20141.953247%2C167.464432%20137.974426%2C159.840820%20z%22%2F%3E%20%3Cpath%20fill%3D%22%23F8A98C%22%20opacity%3D%221.000000%22%20stroke%3D%22none%22%20d%3D%22%20M226.616577%2C2.132329%20C221.390961%2C12.318354%20215.683701%2C22.429411%20209.998581%2C32.552902%20C203.658401%2C43.842854%20197.338364%2C55.144104%20190.934723%2C66.812042%20C188.932114%2C66.852997%20187.005234%2C66.241211%20185.076370%2C66.234871%20C164.099838%2C66.165840%20143.122986%2C66.191696%20122.146217%2C66.191689%20C120.332550%2C66.191689%20118.518883%2C66.191689%20115.387909%2C66.191689%20C128.047012%2C44.343670%20140.228073%2C23.320675%20152.674332%2C2.078601%20C177.341248%2C1.927295%20201.742966%2C1.995069%20226.616577%2C2.132329%20z%22%2F%3E%20%3Cpath%20fill%3D%22%236557A2%22%20opacity%3D%221.000000%22%20stroke%3D%22none%22%20d%3D%22%20M45.971233%2C2.461516%20C70.715660%2C2.124906%2095.320389%2C2.101433%20120.378922%2C2.133708%20C108.688316%2C23.274916%2096.543915%2C44.360378%2083.720703%2C65.721184%20C60.402206%2C65.998917%2037.762451%2C66.023315%2015.122941%2C65.959702%20C13.407935%2C65.954887%2011.694687%2C65.324738%209.980621%2C64.985268%20C21.930925%2C44.248394%2033.881229%2C23.511524%2045.971233%2C2.461516%20z%22%2F%3E%20%3Cpath%20fill%3D%22%231DB588%22%20opacity%3D%221.000000%22%20stroke%3D%22none%22%20d%3D%22%20M137.507935%2C159.859100%20C141.953247%2C167.464432%20145.826477%2C175.145477%20149.934830%2C182.698624%20C156.671387%2C195.083725%20163.539062%2C207.397827%20170.418991%2C219.704102%20C171.106720%2C220.934235%20172.260361%2C221.903900%20173.548325%2C222.993835%20C172.524368%2C223.565292%20171.152222%2C224.629364%20169.775040%2C224.635895%20C147.784912%2C224.740128%20125.793739%2C224.761780%20103.804276%2C224.601334%20C102.187225%2C224.589539%2099.856102%2C223.467026%2099.079056%2C222.143417%20C87.285858%2C202.055237%2075.695702%2C181.847824%2064.074638%2C161.658752%20C63.929291%2C161.406235%2064.000053%2C161.029343%2063.891266%2C159.877365%20C88.328522%2C159.877365%20112.684982%2C159.877365%20137.507935%2C159.859100%20z%22%2F%3E%20%3Cpath%20fill%3D%22%239182BC%22%20opacity%3D%221.000000%22%20stroke%3D%22none%22%20d%3D%22%20M83.957581%2C67.010948%20C96.242828%2C88.112297%20108.528069%2C109.213646%20121.148911%2C130.891418%20C118.825317%2C131.002487%20117.385574%2C131.130600%20115.945778%2C131.131241%20C94.280258%2C131.140884%2072.614151%2C131.054169%2050.949791%2C131.211700%20C47.482635%2C131.236908%2045.646790%2C130.106003%2043.946884%2C127.098656%20C32.722889%2C107.242043%2021.282562%2C87.507713%2010.323404%2C67.372223%20C35.141918%2C67.010918%2059.549751%2C67.010933%2083.957581%2C67.010948%20z%22%2F%3E%20%3Cpath%20fill%3D%22%23A399C7%22%20opacity%3D%221.000000%22%20stroke%3D%22none%22%20d%3D%22%20M83.972092%2C66.754028%20C59.549751%2C67.010933%2035.141918%2C67.010918%2010.243355%2C67.019669%20C9.686771%2C66.445976%209.620922%2C65.863533%209.767847%2C65.133179%20C11.694687%2C65.324738%2013.407935%2C65.954887%2015.122941%2C65.959702%20C37.762451%2C66.023315%2060.402206%2C65.998917%2083.508728%2C65.989555%20C83.979233%2C66.154091%2083.982910%2C66.325600%2083.972092%2C66.754028%20z%22%2F%3E%20%3C%2Fsvg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
 <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
 <style>
 /* ============================================================
@@ -28,9 +31,9 @@
   --amber:       #F59E0B;
   --amber-bg:    #FFF4D6;
 
-  --bg:          #F4F5F8;
+  --bg:          #F5F5F0;
   --surface:     #FFFFFF;
-  --surface-2:   #FAFBFD;
+  --surface-2:   #FAFAF6;
   --border:      #E2E5EC;
   --border-strong:#C8CDD7;
   --text:        #111827;
@@ -44,12 +47,17 @@
 
   --radius:      4px;
   --radius-lg:   6px;
+
+  /* Type system — matches visionblox.org (owner-authorized 2026-06-02) */
+  --font-sans:    'DM Sans', Arial, Helvetica, sans-serif;
+  --font-display: 'DM Serif Display', Georgia, 'Times New Roman', serif;
+  --font-mono:    'JetBrains Mono', 'IBM Plex Mono', 'Courier New', monospace;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 html, body {
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
   font-size: 14px;
   color: var(--text);
   background: var(--bg);
@@ -83,11 +91,11 @@ html, body {
   gap: 14px;
 }
 .brand-logo {
-  width: 46px;
-  height: 46px;
+  width: 44px;
+  height: 38px;
   flex: none;
   display: block;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25));
+  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.3));
 }
 .brand-logo svg { width: 100%; height: 100%; display: block; }
 .brand-text {
@@ -96,34 +104,38 @@ html, body {
   gap: 2px;
 }
 .brand-wordmark {
-  font-size: 18px;
-  font-weight: 800;
-  letter-spacing: 0.16em;
+  font-family: var(--font-display);
+  font-size: 25px;
+  font-weight: 400;
+  letter-spacing: 0.005em;
   line-height: 1;
   color: var(--text-inverse);
 }
-.brand-wordmark .wm-accent { color: var(--gold); }
 .brand-title {
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.14em;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.32em;
   text-transform: uppercase;
   color: var(--teal);
 }
 .brand-subtitle {
-  font-size: 10.5px;
-  color: rgba(255, 255, 255, 0.7);
-  letter-spacing: 0.08em;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  color: rgba(255, 255, 255, 0.55);
+  letter-spacing: 0.18em;
   text-transform: uppercase;
 }
 .brand-subtitle .badge {
   display: inline-block;
+  font-family: var(--font-mono);
   padding: 1px 6px;
   background: rgba(247, 184, 1, 0.18);
   color: var(--gold);
   border-radius: 2px;
   margin-left: 6px;
-  font-weight: 700;
+  font-weight: 600;
+  letter-spacing: 0.08em;
 }
 
 .header-controls {
@@ -151,7 +163,7 @@ html, body {
   background: transparent;
   border: none;
   color: var(--gold);
-  font-family: Arial, sans-serif;
+  font-family: var(--font-mono);
   font-size: 13px;
   font-weight: 700;
   outline: none;
@@ -165,20 +177,24 @@ html, body {
   gap: 8px;
 }
 .file-upload-btn {
-  background: var(--teal);
-  color: var(--text-inverse);
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--gold);
+  color: var(--navy);
   border: none;
-  padding: 8px 14px;
+  padding: 9px 16px;
   border-radius: var(--radius);
-  font-family: Arial, sans-serif;
-  font-size: 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   cursor: pointer;
-  transition: background 0.15s;
+  transition: background 0.15s, transform 0.12s;
 }
-.file-upload-btn:hover { background: var(--teal-dark); }
+.file-upload-btn::after { content: "\2192"; font-weight: 700; }
+.file-upload-btn:hover { background: var(--gold-dark); transform: translateY(-1px); }
 .file-upload-btn input { display: none; }
 .file-status {
   font-size: 11px;
@@ -200,19 +216,26 @@ html, body {
   margin-bottom: 32px;
 }
 .section-title {
+  font-family: var(--font-mono);
   font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.18em;
+  font-weight: 600;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: var(--text-2);
+  color: var(--navy);
   margin-bottom: 12px;
   padding-bottom: 8px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--border-strong);
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
+.section-title > span:first-child::before {
+  content: "// ";
+  color: var(--teal);
+  font-weight: 700;
+}
 .section-title .section-meta {
+  font-family: var(--font-sans);
   font-size: 10px;
   font-weight: 400;
   color: var(--text-3);
@@ -259,19 +282,21 @@ html, body {
 .kpi-card.accent-amber::before { background: var(--amber); }
 
 .kpi-label {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--text-3);
   margin-bottom: 8px;
 }
 .kpi-value {
-  font-size: 26px;
-  font-weight: 700;
-  color: var(--text);
-  letter-spacing: -0.02em;
-  line-height: 1.1;
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 400;
+  color: var(--navy);
+  letter-spacing: -0.01em;
+  line-height: 1.05;
   font-variant-numeric: tabular-nums;
 }
 .kpi-value.negative { color: var(--red); }
@@ -286,7 +311,8 @@ html, body {
   position: absolute;
   bottom: 8px;
   right: 10px;
-  font-size: 9px;
+  font-family: var(--font-mono);
+  font-size: 8.5px;
   color: var(--text-3);
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -311,8 +337,9 @@ html, body {
 .cadence-table thead th {
   background: var(--navy);
   color: var(--text-inverse);
-  font-size: 10px;
-  font-weight: 700;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   padding: 10px 12px;
@@ -324,7 +351,8 @@ html, body {
 .cadence-table tbody td {
   padding: 11px 12px;
   border-bottom: 1px solid var(--border);
-  font-size: 13px;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
   text-align: right;
 }
 .cadence-table tbody tr:last-child td { border-bottom: none; }
@@ -335,7 +363,8 @@ html, body {
 .cadence-table tbody tr:hover { background: var(--surface-2); }
 .cadence-table .kpi-name {
   text-align: left;
-  font-weight: 700;
+  font-family: var(--font-sans);
+  font-weight: 600;
   color: var(--text);
 }
 .cadence-table .delta {
@@ -826,6 +855,43 @@ html, body {
   font-style: italic;
   margin-top: 6px;
 }
+
+/* ============================================================
+   VBX TYPE SYSTEM — visionblox.org alignment
+   (owner-authorized 2026-06-02; supersedes earlier Arial-only)
+   Mono = JetBrains Mono (technical labels + tabular data)
+   Display = DM Serif Display (headline figures)
+   Sans = DM Sans (body, names, descriptions)
+   ============================================================ */
+.asof-label,
+.file-status,
+.file-upload-btn,
+.pipeline-table thead th,
+.fin-table thead th,
+.drill-table th,
+.scenario-title,
+.slider-label,
+.result-label,
+.stage-pill,
+.opp-meta,
+.modal-subtitle {
+  font-family: var(--font-mono) !important;
+}
+/* tabular numeric cells read as ops-console data */
+.pipeline-table tbody td.right,
+.fin-table tbody td,
+.drill-table td.right {
+  font-family: var(--font-mono);
+}
+/* headline figures in editorial serif */
+.result-value,
+.slider-value,
+.scenario-results .result-value,
+.modal-title {
+  font-family: var(--font-display);
+}
+.scenario-title { letter-spacing: 0.2em; }
+.modal-title { font-weight: 400; letter-spacing: 0; }
 </style>
 </head>
 <body>
@@ -833,21 +899,20 @@ html, body {
 <header class="app-header">
   <div class="brand">
     <span class="brand-logo">
-      <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Visionblox logo">
-        <defs>
-          <linearGradient id="vbxNavy" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stop-color="#2E3B6E"/>
-            <stop offset="1" stop-color="#1A2245"/>
-          </linearGradient>
-        </defs>
-        <rect x="1.5" y="1.5" width="45" height="45" rx="10" fill="url(#vbxNavy)" stroke="#F7B801" stroke-width="1.5"/>
-        <path d="M12 14 L24 33" stroke="#2EA891" stroke-width="6" stroke-linecap="round" fill="none"/>
-        <path d="M36 14 L24 33" stroke="#F7B801" stroke-width="6" stroke-linecap="round" fill="none"/>
-        <rect x="21" y="33.5" width="6" height="6" rx="1.5" fill="#FFFFFF"/>
+      <svg viewBox="0 0 272 231" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Visionblox logo">
+        <path fill="#CEC9E1" d="M120.531342,1.000000 C120.985779,1.200164 120.971558,1.400328 120.441223,1.839226 C95.320389,2.101433 70.715660,2.124906 46.110931,2.148379 C46.092243,1.957002 46.073551,1.765625 46.027431,1.287124 C70.687561,1.000000 95.375122,1.000000 120.531342,1.000000 z"/>
+        <path fill="#FCE3DA" d="M152.939529,1.859521 C152.939529,1.859521 152.964935,1.429421 152.982468,1.214710 C177.687561,1.000000 202.375122,1.000000 227.531342,1.000000 C227.989166,1.190234 227.978333,1.380469 227.734543,1.852998 C227.501572,2.135293 227.088455,2.201818 226.616577,2.132330 C201.742966,1.995069 177.341248,1.927295 152.939529,1.859521 z"/>
+        <path fill="#F58E64" d="M227.088455,2.201816 C227.088455,2.201818 227.501572,2.135293 227.710663,2.137809 C239.055908,21.436020 250.052109,40.814857 261.430786,59.966454 C264.131348,64.511833 264.338837,67.838173 261.513062,72.550774 C250.064331,91.644028 239.138779,111.050980 227.552277,131.154068 C215.158936,109.664185 203.101791,88.757271 191.027100,67.145393 C197.338364,55.144104 203.658401,43.842854 209.998581,32.552902 C215.683701,22.429411 221.390961,12.318354 227.088455,2.201816 z"/>
+        <path fill="#64C4A8" d="M137.974426,159.840820 C150.172348,138.546188 162.370255,117.251572 175.019333,95.169342 C176.484909,97.501884 177.541351,99.073044 178.488464,100.707558 C188.902695,118.680489 199.375824,136.620453 209.582108,154.710892 C210.582458,156.484009 210.830826,159.717072 209.880646,161.397324 C198.266617,181.934967 186.363129,202.308914 173.866196,222.859848 C172.260361,221.903900 171.106720,220.934235 170.418991,219.704102 C163.539062,207.397827 156.671387,195.083725 149.934830,182.698624 C145.826477,175.145477 141.953247,167.464432 137.974426,159.840820 z"/>
+        <path fill="#F8A98C" d="M226.616577,2.132329 C221.390961,12.318354 215.683701,22.429411 209.998581,32.552902 C203.658401,43.842854 197.338364,55.144104 190.934723,66.812042 C188.932114,66.852997 187.005234,66.241211 185.076370,66.234871 C164.099838,66.165840 143.122986,66.191696 122.146217,66.191689 C120.332550,66.191689 118.518883,66.191689 115.387909,66.191689 C128.047012,44.343670 140.228073,23.320675 152.674332,2.078601 C177.341248,1.927295 201.742966,1.995069 226.616577,2.132329 z"/>
+        <path fill="#6557A2" d="M45.971233,2.461516 C70.715660,2.124906 95.320389,2.101433 120.378922,2.133708 C108.688316,23.274916 96.543915,44.360378 83.720703,65.721184 C60.402206,65.998917 37.762451,66.023315 15.122941,65.959702 C13.407935,65.954887 11.694687,65.324738 9.980621,64.985268 C21.930925,44.248394 33.881229,23.511524 45.971233,2.461516 z"/>
+        <path fill="#1DB588" d="M137.507935,159.859100 C141.953247,167.464432 145.826477,175.145477 149.934830,182.698624 C156.671387,195.083725 163.539062,207.397827 170.418991,219.704102 C171.106720,220.934235 172.260361,221.903900 173.548325,222.993835 C172.524368,223.565292 171.152222,224.629364 169.775040,224.635895 C147.784912,224.740128 125.793739,224.761780 103.804276,224.601334 C102.187225,224.589539 99.856102,223.467026 99.079056,222.143417 C87.285858,202.055237 75.695702,181.847824 64.074638,161.658752 C63.929291,161.406235 64.000053,161.029343 63.891266,159.877365 C88.328522,159.877365 112.684982,159.877365 137.507935,159.859100 z"/>
+        <path fill="#9182BC" d="M83.957581,67.010948 C96.242828,88.112297 108.528069,109.213646 121.148911,130.891418 C118.825317,131.002487 117.385574,131.130600 115.945778,131.131241 C94.280258,131.140884 72.614151,131.054169 50.949791,131.211700 C47.482635,131.236908 45.646790,130.106003 43.946884,127.098656 C32.722889,107.242043 21.282562,87.507713 10.323404,67.372223 C35.141918,67.010918 59.549751,67.010933 83.957581,67.010948 z"/>
+        <path fill="#A399C7" d="M83.972092,66.754028 C59.549751,67.010933 35.141918,67.010918 10.243355,67.019669 C9.686771,66.445976 9.620922,65.863533 9.767847,65.133179 C11.694687,65.324738 13.407935,65.954887 15.122941,65.959702 C37.762451,66.023315 60.402206,65.998917 83.508728,65.989555 C83.979233,66.154091 83.982910,66.325600 83.972092,66.754028 z"/>
       </svg>
     </span>
     <div class="brand-text">
-      <div class="brand-wordmark">VISION<span class="wm-accent">BLOX</span></div>
+      <div class="brand-wordmark">visionblox</div>
       <div class="brand-title">Command Center</div>
       <div class="brand-subtitle">
         Operations Dashboard
