@@ -101,9 +101,10 @@ All trailing computations use:
 ## Brand standards
 
 Mandatory across all generated artifacts:
-- **Colors:** Navy `#232D5A` · Teal `#2EA891` · Gold `#F7B801`
-- **Font:** Arial (per VBX visual identity)
-- **Logo:** Required on all internal and external documents
+- **Colors:** Navy `#232D5A` · Teal `#2EA891` · Gold `#F7B801` (aligned with visionblox.org)
+- **Type:** DM Serif Display (headlines) · DM Sans (body) · JetBrains Mono (labels/data) in the
+  dashboard; Arial in Excel artifacts. See [CLAUDE.md](./CLAUDE.md) §4.
+- **Logo:** Visionblox faceted mark, required on all internal and external documents
 
 Brand drift in any output is a defect. See [CLAUDE.md](./CLAUDE.md) for full design constants.
 

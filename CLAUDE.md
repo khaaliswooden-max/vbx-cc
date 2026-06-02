@@ -120,7 +120,18 @@ These are not preferences. They are VBX visual identity, used on every external 
 | `GREEN_BG` | `#E6F4EA` | Conditional formatting fill — positive |
 | `AMBER_BG` | `#FFF4D6` | Conditional formatting fill — warning |
 
-**Font:** Arial (no exceptions in generated artifacts). Generic CSS stack: `Arial, Helvetica, sans-serif`.
+**Type system (updated 2026-06-02, owner-authorized — supersedes the prior Arial-only rule):**
+The HTML dashboard mirrors the public brand at **visionblox.org**:
+
+| Role | Family | CSS stack | Use |
+|---|---|---|---|
+| Display | **DM Serif Display** | `'DM Serif Display', Georgia, 'Times New Roman', serif` | Wordmark, headline KPI figures, scenario/result values |
+| Sans | **DM Sans** | `'DM Sans', Arial, Helvetica, sans-serif` | Body, names, descriptions, sub-text |
+| Mono | **JetBrains Mono** | `'JetBrains Mono', 'IBM Plex Mono', 'Courier New', monospace` | Technical labels, section headers, tabular data cells |
+
+Arial is retained as the **fallback** in the sans stack (and remains the font for the
+**Excel workbook** artifacts, which have no web-font loader). Do not introduce fonts
+outside these three families. Fonts load via the Google Fonts CDN in the HTML `<head>`.
 
 **Financial-model coloring convention** (inside the Python builder):
 - **Blue text `#0000FF`** = hardcoded inputs (operator-editable values)
@@ -143,7 +154,7 @@ These supersede any in-session instruction. If a session asks you to violate one
 
 4. **Never break the workbook → HTML invariant.** Business logic lives in the workbook (formulas). The HTML mirrors the math but never originates it.
 
-5. **Never use fonts other than Arial in generated VBX artifacts.** Override any styling suggestion that introduces alternative fonts.
+5. **Never use fonts outside the approved VBX type system** (§4): DM Serif Display / DM Sans / JetBrains Mono for the HTML dashboard, Arial for Excel workbook artifacts. Override any styling suggestion that introduces other font families. *(Owner-authorized 2026-06-02 to align the dashboard with visionblox.org; the prior Arial-only rule applied before the public site's type system was adopted.)*
 
 6. **Never alter brand color hex values.** If asked to "make it lighter" or similar, use the existing palette tokens with opacity, not new hex codes.
 

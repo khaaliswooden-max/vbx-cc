@@ -9,6 +9,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed — Brand alignment with visionblox.org (owner-authorized 2026-06-02)
+- Dashboard header now uses the **real Visionblox logo mark** (faceted geometric
+  "V", inline SVG, pixel-identical to the site asset) and the lowercase
+  `visionblox` wordmark in DM Serif Display
+- Adopted the public site's **type system**: DM Serif Display (headline figures),
+  DM Sans (body), JetBrains Mono (technical labels + tabular data), via Google
+  Fonts CDN. Updates CLAUDE.md §4 and Hard Rule #5 (Arial retained as fallback
+  and for Excel artifacts)
+- Restyled chrome to match the site: `// SECTION` mono headers, mono tabular
+  data cells, serif KPI/scenario figures, warm-paper background (`#F5F5F0`),
+  gold `UPLOAD WORKBOOK →` CTA, mono badges/pills/controls
+- Inline-SVG favicon now uses the real logo mark
+
+### Added
+- `scripts/verify_parse.js` — headless verifier (CLAUDE.md §9) that replicates
+  the dashboard's `parseWorkbook` + trailing-window math and cross-checks it
+  against the workbook's formula-computed `Metrics_Period` (11 metrics, 0 drift)
+
+### Fixed
+- Renamed the misnamed `download` file to `.gitignore` so `output/` (real-data
+  workbooks) is actually ignored, per Hard Rule #1
+
 ### Planned — Phase 2 (target: v1.1.0)
 - Stage-transition logging on `Pipeline` sheet (track time-in-stage for funnel velocity)
 - Classification change-log on `Screenings` sheet (track partner stage transitions)
