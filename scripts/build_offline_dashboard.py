@@ -96,13 +96,16 @@ def main():
     open(OUT, "w", encoding="utf-8").write(html)
 
     # ship the recipient guide alongside the bundle
+    wrote_guide = False
     if os.path.exists(GUIDE_SRC):
         open(GUIDE_OUT, "w", encoding="utf-8").write(open(GUIDE_SRC, encoding="utf-8").read())
+        wrote_guide = True
 
     remaining = re.findall(r'(?:src|href)="https?://(?![^"]*data:)[^"]+"', html)
     size_mb = os.path.getsize(OUT) / 1e6
     print(f"\nWrote {OUT}  ({size_mb:.2f} MB)")
-    print(f"Wrote {GUIDE_OUT}")
+    if wrote_guide:
+        print(f"Wrote {GUIDE_OUT}")
     print(f"Remaining external http refs: {len(remaining)}")
     for r in remaining:
         print("  !", r)

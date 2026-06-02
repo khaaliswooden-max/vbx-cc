@@ -97,15 +97,20 @@ def main():
         guide = guide.replace("{{SNAPSHOT_DATE}}", _today())
         guide = guide.replace("{{ASOF_DATE}}", _asof_date())
         open(GUIDE_OUT, "w", encoding="utf-8").write(guide)
+        print(f"Wrote {GUIDE_OUT}")
 
     print(f"\nWrote {OUT}  ({os.path.getsize(OUT)/1e6:.2f} MB)")
-    print(f"Wrote {GUIDE_OUT}")
     print("⚠  Contains real data — share via approved internal channels only; never commit.")
+
+
+def _fmt_date(d):
+    """Format a date as 'Month D, YYYY' without the platform-specific %-d."""
+    return f"{d.strftime('%B')} {d.day}, {d.strftime('%Y')}"
 
 
 def _today():
     import datetime
-    return datetime.date.today().strftime("%B %-d, %Y")
+    return _fmt_date(datetime.date.today())
 
 
 def _asof_date():
@@ -113,7 +118,7 @@ def _asof_date():
     try:
         from openpyxl import load_workbook
         v = load_workbook(WORKBOOK, data_only=True)["Dashboard"]["C4"].value
-        return v.strftime("%B %-d, %Y") if hasattr(v, "strftime") else str(v)
+        return _fmt_date(v) if hasattr(v, "strftime") else str(v)
     except Exception:
         return "see the As-of date shown top-right in the dashboard"
 
