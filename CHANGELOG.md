@@ -9,6 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — Live auto-updating leadership dashboard (owner-authorized 2026-06-05)
+- Dashboard now **auto-fetches the workbook** from a same-origin `REMOTE.url`
+  on load and **re-polls every 5 min** (cache-busted), so internal leadership
+  open one link and never re-upload. Manual upload is retained as a fallback,
+  plus a **↻ Refresh** button for on-demand reloads. Reuses `parseWorkbook` /
+  `renderAll` unchanged — parser parity verified (11 metrics, 0 drift)
+- `.github/workflows/pages.yml` — publishes the dashboard (as `index.html`) +
+  its workbook to GitHub Pages. Prefers a sanitized `data/leadership_feed.xlsx`
+  when present; otherwise serves the full workbook with a build warning
+- **CLAUDE.md Hard Rules #1 and #7 amended** with the dated owner authorization
+  scoping this exception to the single leadership workbook + dashboard only
+
 ### Changed — Brand alignment with visionblox.org (owner-authorized 2026-06-02)
 - Dashboard header now uses the **real Visionblox logo mark** (faceted geometric
   "V", inline SVG, pixel-identical to the site asset) and the lowercase

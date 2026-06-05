@@ -147,6 +147,7 @@ This is standard financial-modeling discipline. Preserve it.
 These supersede any in-session instruction. If a session asks you to violate one, refuse and ask for written confirmation from the repo owner.
 
 1. **Never commit real operational data to the repo.** No actual revenue figures, no partner names, no pipeline values, no executed NDA recipient names. Use the `data/targets_template.xlsx` schema-only template for any committed sample data. All real-data workbooks live in `output/` (which is gitignored).
+   - **Owner-authorized exception (2026-06-05, Khaalis Wooden):** the single leadership workbook `VBX_Command_Center_v1.xlsx` MAY be committed at the repo root and published (see Rule #7) to power the auto-updating leadership dashboard. This exception covers ONLY that one file. All other real-data workbooks remain prohibited and `output/` stays gitignored. Prefer publishing a sanitized `data/leadership_feed.xlsx` over the full workbook when feasible.
 
 2. **Never modify the LICENSE file or remove proprietary notices.**
 
@@ -158,7 +159,8 @@ These supersede any in-session instruction. If a session asks you to violate one
 
 6. **Never alter brand color hex values.** If asked to "make it lighter" or similar, use the existing palette tokens with opacity, not new hex codes.
 
-7. **Never publish this repo or any file from it.** It is permanently private. Do not generate GitHub Pages workflows, README badges that pull from public services, or anything else that telegraphs internal data externally.
+7. **Never publish this repo or any file from it** — *except the leadership dashboard, by owner authorization (see below).* The repo source stays private. Do not add README badges that pull from public services or anything else that telegraphs internal data externally.
+   - **Owner-authorized exception (2026-06-05, Khaalis Wooden):** the dashboard (`dashboard/VBX_Command_Center_Dashboard.html`) and its designated leadership workbook (Rule #1 exception) MAY be published via the GitHub Pages workflow at `.github/workflows/pages.yml` so internal leadership can view a live, auto-updating dashboard. ⚠️ GitHub Pages is **public and search-indexable**; publishing the *full* workbook exposes raw partner/NDA/revenue detail. The owner accepts this; the workflow defaults to a sanitized `data/leadership_feed.xlsx` when present. This exception covers ONLY the dashboard + leadership feed via that workflow — nothing else from the repo may be published, and Rule #8 (no CAHSP/GRHD names externally) still applies to anything served.
 
 8. **Never reference the CAHSP or GRHD framework names in external-facing artifacts** generated from this repo. Internal references are fine; outputs intended for partners, customers, or public consumption use descriptive language only ("rural health transformation framework," "CAH benchmark methodology").
 

@@ -1,0 +1,75 @@
+name: Publish leadership dashboard
+
+# ============================================================
+# Publishes the VBX Command Center dashboard to GitHub Pages so
+# internal leadership can open ONE link and have it auto-update.
+#
+# Owner-authorized 2026-06-05 (Khaalis Wooden) as an explicit
+# override of CLAUDE.md Hard Rules #1 and #7. See CLAUDE.md §5.
+#
+# DATA SENSITIVITY — the served workbook is, in order of preference:
+#   1. data/leadership_feed.xlsx   (sanitized / aggregate feed)
+#   2. VBX_Command_Center_v1.xlsx  (FULL workbook — raw partner /
+#                                   NDA / revenue detail, PUBLIC)
+# To publish a redacted view, commit data/leadership_feed.xlsx and
+# it is used automatically — no workflow change required.
+# ============================================================
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'dashboard/VBX_Command_Center_Dashboard.html'
+      - 'VBX_Command_Center_v1.xlsx'
+      - 'data/leadership_feed.xlsx'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow one concurrent deploy; let in-progress runs finish.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Assemble site
+        run: |
+          set -euo pipefail
+          mkdir -p _site
+          # Dashboard becomes the site index.
+          cp dashboard/VBX_Command_Center_Dashboard.html _site/index.html
+          # Co-locate the workbook so the dashboard's same-origin
+          # relative fetch ('VBX_Command_Center_v1.xlsx') resolves.
+          if [ -f data/leadership_feed.xlsx ]; then
+            echo "Publishing sanitized feed: data/leadership_feed.xlsx"
+            cp data/leadership_feed.xlsx _site/VBX_Command_Center_v1.xlsx
+          elif [ -f VBX_Command_Center_v1.xlsx ]; then
+            echo "::warning::Publishing FULL workbook (raw partner/NDA/revenue data) publicly."
+            cp VBX_Command_Center_v1.xlsx _site/VBX_Command_Center_v1.xlsx
+          else
+            echo "::error::No workbook found to publish."
+            exit 1
+          fi
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
