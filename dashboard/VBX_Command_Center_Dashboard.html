@@ -196,6 +196,23 @@ html, body {
 .file-upload-btn::after { content: "\2192"; font-weight: 700; }
 .file-upload-btn:hover { background: var(--gold-dark); transform: translateY(-1px); }
 .file-upload-btn input { display: none; }
+.refresh-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  color: var(--gold);
+  border: 1px solid var(--gold);
+  padding: 8px 13px;
+  border-radius: var(--radius);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.refresh-btn:hover { background: rgba(247, 184, 1, 0.12); transform: translateY(-1px); }
 .file-status {
   font-size: 11px;
   color: rgba(255, 255, 255, 0.6);
@@ -931,6 +948,7 @@ html, body {
         Upload Workbook
         <input type="file" id="file-input" accept=".xlsx,.xls">
       </span>
+      <button type="button" class="refresh-btn" id="refresh-btn" title="Reload the live workbook now">↻ Refresh</button>
       <span class="file-status" id="file-status">No file loaded</span>
     </label>
   </div>
@@ -1145,6 +1163,23 @@ const DEFAULTS = {
   ndas: [],
   agreements: [],
   activeProjects: [],
+};
+
+// ============================================================
+// REMOTE WORKBOOK FEED (auto-update for leadership)
+// ------------------------------------------------------------
+// When the dashboard is served alongside a workbook (e.g. GitHub
+// Pages), it fetches that file on load and re-polls on a timer so
+// viewers never re-upload. `url` is resolved relative to the page,
+// so the workbook must sit at the same origin/path (no CORS).
+//   • Swap `url` to point at a sanitized vs. full feed.
+//   • Set `enabled: false` to fall back to manual upload only.
+//   • Set `pollMs: 0` to disable auto-poll (manual refresh only).
+// ============================================================
+const REMOTE = {
+  url: 'VBX_Command_Center_v1.xlsx', // same-origin relative path → no CORS
+  pollMs: 5 * 60 * 1000,             // re-poll every 5 min; 0 disables
+  enabled: true,
 };
 
 // ============================================================
@@ -2004,27 +2039,57 @@ function renderPLBreakdown() {
 // ============================================================
 // EVENT HANDLERS
 // ============================================================
+function setFileStatus(text, loaded) {
+  const status = document.getElementById('file-status');
+  if (!status) return;
+  status.textContent = text;
+  status.className = loaded ? 'file-status loaded' : 'file-status';
+}
+
+function ingestWorkbookData(data) {
+  // Shared path for both manual upload and remote fetch.
+  const workbook = XLSX.read(data, { type: 'array', cellDates: true });
+  STATE.data = parseWorkbook(workbook);
+  renderAll();
+}
+
 function handleFileSelect(e) {
   const file = e.target.files[0];
   if (!file) return;
-  const status = document.getElementById('file-status');
-  status.textContent = 'Parsing…';
+  setFileStatus('Parsing…', false);
   const reader = new FileReader();
   reader.onload = function(evt) {
     try {
-      const data = new Uint8Array(evt.target.result);
-      const workbook = XLSX.read(data, { type: 'array', cellDates: true });
-      STATE.data = parseWorkbook(workbook);
-      status.textContent = `${file.name}`;
-      status.className = 'file-status loaded';
-      renderAll();
+      ingestWorkbookData(new Uint8Array(evt.target.result));
+      setFileStatus(file.name, true);
     } catch (err) {
       console.error(err);
-      status.textContent = `Error: ${err.message}`;
-      status.className = 'file-status';
+      setFileStatus(`Error: ${err.message}`, false);
     }
   };
   reader.readAsArrayBuffer(file);
+}
+
+// Fetch the workbook from the same-origin REMOTE.url and re-render.
+// Cache-buster defeats the browser/CDN cache so updates show on poll.
+function loadRemoteWorkbook() {
+  if (!REMOTE.enabled || !REMOTE.url) return Promise.resolve();
+  setFileStatus('Loading live data…', false);
+  return fetch(`${REMOTE.url}?t=${Date.now()}`, { cache: 'no-store' })
+    .then((resp) => {
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      return resp.arrayBuffer();
+    })
+    .then((buf) => {
+      ingestWorkbookData(new Uint8Array(buf));
+      const stamp = new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+      setFileStatus(`Live · updated ${stamp}`, true);
+    })
+    .catch((err) => {
+      console.error(err);
+      // Soft-fail: keep whatever is already rendered (defaults or prior fetch).
+      setFileStatus(`Live feed unavailable (${err.message}) — upload manually`, false);
+    });
 }
 
 function handleAsofChange(e) {
@@ -2064,6 +2129,7 @@ function init() {
 
   // Wire events
   document.getElementById('file-input').addEventListener('change', handleFileSelect);
+  document.getElementById('refresh-btn').addEventListener('click', loadRemoteWorkbook);
   document.getElementById('asof-date').addEventListener('change', handleAsofChange);
   document.getElementById('winrate-slider').addEventListener('input', handleScenarioChange);
   document.getElementById('y1pct-slider').addEventListener('input', handleScenarioChange);
@@ -2075,6 +2141,14 @@ function init() {
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeDrill(); });
 
   renderAll();
+
+  // Auto-load the live workbook (if served alongside one), then poll.
+  if (REMOTE.enabled) {
+    loadRemoteWorkbook();
+    if (REMOTE.pollMs > 0) {
+      setInterval(loadRemoteWorkbook, REMOTE.pollMs);
+    }
+  }
 }
 
 if (document.readyState === 'loading') {
