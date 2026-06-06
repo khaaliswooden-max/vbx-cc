@@ -2016,7 +2016,7 @@ function renderTargetBreakdown() {
       <tr><td><strong>Subtotal Confirmed</strong></td><td class="right"><strong>${fmtCurrency(t.confirmedRev)}</strong></td></tr>
       <tr><td><strong>= Gap to ARR Target (must win)</strong></td><td class="right" style="color:var(--red);"><strong>${fmtCurrency(t.arrGap)}</strong></td></tr>
       <tr><td colspan="2" style="padding-top:14px; color:var(--text-3); font-style:italic;">
-        At 25% pipeline conversion on $${(STATE.data.pipeline.filter(p => p.stage !== 'Awarded' && p.stage !== 'Lost').reduce((s,p) => s + (p.value||0), 0) / 1e6).toFixed(1)}M active pipeline, expected won TCV would be sufficient to cover this gap if Y1 booking percentage exceeds the target gap / (pipeline × win rate).
+        At 25% pipeline conversion on $${(STATE.data.pipeline.filter(p => p.stage !== 'Awarded' && p.stage !== 'Lost' && p.stage !== 'No-Bid').reduce((s,p) => s + (p.value||0), 0) / 1e6).toFixed(1)}M active pipeline, expected won TCV would be sufficient to cover this gap if Y1 booking percentage exceeds the target gap / (pipeline × win rate).
       </td></tr>
     </tbody>
   </table>`;
