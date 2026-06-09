@@ -12,7 +12,7 @@
 // ============================================================
 const XLSX = require('xlsx');
 
-const WB_PATH = process.argv[2] || 'output/VBX_Command_Center_v1.xlsx';
+const WB_PATH = process.argv[2] || 'VBX_Command_Center_v1.1.xlsx';
 const wb = XLSX.readFile(WB_PATH, { cellDates: true });
 
 // ---- mirror of the HTML helpers --------------------------------

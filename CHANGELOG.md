@@ -9,6 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed — Workbook bumped to v1.1 (2026-06-09)
+- Refreshed leadership workbook to `VBX_Command_Center_v1.1.xlsx`:
+  rebuilt `Pipeline` (20 active opps centered on HRSA / VA / RHTP / USAC tracks),
+  added screenings rows 57–62 (BAC, NCP, et al.) and one new partner meeting,
+  rolled `As_Of_Date` forward to 2026-06-08 (also a `SUMIFS` criterion reorder
+  on `Dashboard!D12` — same logic, no math impact)
+- Dashboard `REMOTE.url` and as-of-date control retargeted at the v1.1 file
+- `.github/workflows/pages.yml` trigger paths + publish step retargeted at the
+  v1.1 file (still served as same-origin `VBX_Command_Center_v1.1.xlsx`)
+- HTML parsing logic unchanged — no intel duplicated into the dashboard
+
 ### Added — Live auto-updating leadership dashboard (owner-authorized 2026-06-05)
 - Dashboard now **auto-fetches the workbook** from a same-origin `REMOTE.url`
   on load and **re-polls every 5 min** (cache-busted), so internal leadership

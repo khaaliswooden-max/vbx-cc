@@ -941,7 +941,7 @@ html, body {
   <div class="header-controls">
     <div class="asof-control">
       <span class="asof-label">As-of</span>
-      <input type="date" id="asof-date" value="2026-06-01">
+      <input type="date" id="asof-date" value="2026-06-08">
     </div>
     <label class="file-upload">
       <span class="file-upload-btn">
@@ -1137,7 +1137,7 @@ html, body {
    ============================================================ */
 
 const STATE = {
-  asOfDate: new Date(2026, 5, 1),    // June 1, 2026
+  asOfDate: new Date(2026, 5, 8),    // June 8, 2026
   data: null,                          // Loaded from workbook
   scenario: { winRate: 0.25, y1Pct: 0.33, cycle: 6 },
 };
@@ -1177,7 +1177,7 @@ const DEFAULTS = {
 //   • Set `pollMs: 0` to disable auto-poll (manual refresh only).
 // ============================================================
 const REMOTE = {
-  url: 'VBX_Command_Center_v1.xlsx', // same-origin relative path → no CORS
+  url: 'VBX_Command_Center_v1.1.xlsx', // same-origin relative path → no CORS
   pollMs: 5 * 60 * 1000,             // re-poll every 5 min; 0 disables
   enabled: true,
 };

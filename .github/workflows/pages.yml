@@ -8,9 +8,9 @@ name: Publish leadership dashboard
 # override of CLAUDE.md Hard Rules #1 and #7. See CLAUDE.md §5.
 #
 # DATA SENSITIVITY — the served workbook is, in order of preference:
-#   1. data/leadership_feed.xlsx   (sanitized / aggregate feed)
-#   2. VBX_Command_Center_v1.xlsx  (FULL workbook — raw partner /
-#                                   NDA / revenue detail, PUBLIC)
+#   1. data/leadership_feed.xlsx       (sanitized / aggregate feed)
+#   2. VBX_Command_Center_v1.1.xlsx    (FULL workbook — raw partner /
+#                                       NDA / revenue detail, PUBLIC)
 # To publish a redacted view, commit data/leadership_feed.xlsx and
 # it is used automatically — no workflow change required.
 # ============================================================
@@ -20,7 +20,7 @@ on:
     branches: [main]
     paths:
       - 'dashboard/VBX_Command_Center_Dashboard.html'
-      - 'VBX_Command_Center_v1.xlsx'
+      - 'VBX_Command_Center_v1.1.xlsx'
       - 'data/leadership_feed.xlsx'
       - '.github/workflows/pages.yml'
   workflow_dispatch: {}
@@ -48,13 +48,13 @@ jobs:
           # Dashboard becomes the site index.
           cp dashboard/VBX_Command_Center_Dashboard.html _site/index.html
           # Co-locate the workbook so the dashboard's same-origin
-          # relative fetch ('VBX_Command_Center_v1.xlsx') resolves.
+          # relative fetch ('VBX_Command_Center_v1.1.xlsx') resolves.
           if [ -f data/leadership_feed.xlsx ]; then
             echo "Publishing sanitized feed: data/leadership_feed.xlsx"
-            cp data/leadership_feed.xlsx _site/VBX_Command_Center_v1.xlsx
-          elif [ -f VBX_Command_Center_v1.xlsx ]; then
+            cp data/leadership_feed.xlsx _site/VBX_Command_Center_v1.1.xlsx
+          elif [ -f VBX_Command_Center_v1.1.xlsx ]; then
             echo "::warning::Publishing FULL workbook (raw partner/NDA/revenue data) publicly."
-            cp VBX_Command_Center_v1.xlsx _site/VBX_Command_Center_v1.xlsx
+            cp VBX_Command_Center_v1.1.xlsx _site/VBX_Command_Center_v1.1.xlsx
           else
             echo "::error::No workbook found to publish."
             exit 1
