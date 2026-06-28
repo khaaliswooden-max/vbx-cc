@@ -9,6 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — Pipeline: SENTRY pursuit (TES x VBX) (2026-06-27)
+- New `Pipeline` row **OPP-022** — *SENTRY (CB26-RFQ0012) — CBO IT Support
+  BPA, SMA 2 Cloud Service Support (J4 + J5)*. Customer: Congressional
+  Budget Office. Stage: **Capture**. Teaming: TES (prime) x VBX (sub),
+  with VBX quoting SMA 2 LCATs — **J4 Microsoft Cloud Engineering SME**
+  and **J5 Full Stack Developer**. 5-yr BPA under GSA IT Schedule
+  **SIN 54151S**, PoP 08/15/26–08/14/31. Questions due 06/18/26; quote
+  due **07/07/26 5pm ET** to OAM@cbo.gov. Public Trust Tier 2 (Capitol
+  Police). Remote w/ on-site option at Ford House Office Building, DC.
+  VBX-share est. $4M (2 FTE × 5yr). Capture owner: Khaalis Wooden.
+- No changes to NDAs/Agreements/Screenings — TES is already on file
+  (NDA #10, PRIORITY classification).
+
 ### Changed — Workbook bumped to v1.1 (2026-06-09)
 - Refreshed leadership workbook to `VBX_Command_Center_v1.1.xlsx`:
   rebuilt `Pipeline` (20 active opps centered on HRSA / VA / RHTP / USAC tracks),
