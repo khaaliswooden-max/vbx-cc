@@ -9,6 +9,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — Dashboard: Wins & Awards drill-down (2026-07-08)
+- The two **Wins & Awards** summary cards (**Awards Won (#)** and
+  **Awarded TCV ($)**) are now **click-to-drill**, matching the Financial
+  and Operations KPI cards. Each opens a new `awards` drill-down modal
+  titled *Wins & Awards — Award Detail*.
+- The drill presents a **summary strip** (Awards Won · Total Awarded TCV ·
+  Average Award · Largest Award · % of Y1 ARR Target), the **full award
+  ledger** (ID · Opportunity · Client · NAICS · Award Date · TCV · Notes,
+  most-recent-first), and a footer reconciling awarded TCV against the
+  Year-1 ARR target. Empty state handled when no awards exist.
+- Cards use the existing `attachDrillHandlers`/`openDrill` machinery — no
+  new dependencies, fonts, or colors; award counting stays stage-based and
+  ungated by `As_Of_Date`, consistent with the panel. Verified end-to-end
+  headlessly (Chromium): both cards clickable, modal renders 5 stat blocks
+  and the awarded row only, closes on Escape.
+
 ### Added — Dashboard: Wins & Awards panel (2026-07-08)
 - New **Wins & Awards** band on the HTML dashboard (between Operations and
   BD Cadence) so a won opportunity is visible instead of silently dropping
