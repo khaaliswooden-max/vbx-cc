@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   **Executed NDAs** drill-down) in `VBX_Command_Center_v1.1.xlsx`:
   - Grit Government Solutions → Frank Culmone
   - Novarens Systems → Reginald Phillippes
-  - FortunaBMC → Alice
+  - FortunaBMC → Alice Parenti
   - Invicta Solutions Group (ISG) → Thomas Radcliffe
 - Applied the same mappings to the matching rows on the **Screenings**
   sheet (Primary Contact column) so the entity → contact link stays
