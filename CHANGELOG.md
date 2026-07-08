@@ -9,6 +9,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed — Vendor SheetJS same-origin (2026-07-08)
+- The dashboard now loads SheetJS from `dashboard/vendor/xlsx.full.min.js`
+  (served same-origin) instead of `cdn.sheetjs.com`. That CDN is Cloudflare-
+  gated and is blocked on some viewer networks, which left the published
+  leadership dashboard showing `XLSX is not defined` / "Live feed unavailable"
+  with every KPI at `$0`. Serving the parser same-origin removes the last
+  third-party runtime dependency (only Google Fonts remains, and it degrades
+  gracefully to the fallback stack).
+- Vendored build is SheetJS **0.18.5** — the last version published to npm /
+  the public GitHub mirror; 0.20.0 is distributed only from the Cloudflare-
+  gated origin and is not self-hostable. The dashboard uses only
+  `XLSX.read(data, { type:'array', cellDates:true })`, whose behavior is
+  identical across these versions.
+- `.github/workflows/pages.yml` now copies `dashboard/vendor/` into the
+  published `_site/vendor/` and re-publishes when the vendor file changes.
+- Verified end-to-end in a headless browser against the published `_site`
+  layout: `XLSX.version` resolves to 0.18.5, the workbook auto-loads
+  ("Live · updated"), and all KPI cards populate (Revenue $68,500, NDAs 19,
+  Pipeline $4.0M, Awarded TCV $2.0M).
+
 ### Changed — NDA / Screening contact mapping (2026-07-08)
 - Filled the four blank partner contacts (previously shown as `–` in the
   **Executed NDAs** drill-down) in `VBX_Command_Center_v1.1.xlsx`:

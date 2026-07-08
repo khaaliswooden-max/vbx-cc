@@ -20,6 +20,7 @@ on:
     branches: [main]
     paths:
       - 'dashboard/VBX_Command_Center_Dashboard.html'
+      - 'dashboard/vendor/**'
       - 'VBX_Command_Center_v1.1.xlsx'
       - 'data/leadership_feed.xlsx'
       - '.github/workflows/pages.yml'
@@ -47,6 +48,10 @@ jobs:
           mkdir -p _site
           # Dashboard becomes the site index.
           cp dashboard/VBX_Command_Center_Dashboard.html _site/index.html
+          # Vendored SheetJS — served same-origin so the dashboard has no
+          # third-party runtime dependency (the page loads vendor/xlsx.full.min.js).
+          mkdir -p _site/vendor
+          cp dashboard/vendor/xlsx.full.min.js _site/vendor/xlsx.full.min.js
           # Co-locate the workbook so the dashboard's same-origin
           # relative fetch ('VBX_Command_Center_v1.1.xlsx') resolves.
           if [ -f data/leadership_feed.xlsx ]; then
