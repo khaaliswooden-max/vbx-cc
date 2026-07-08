@@ -298,6 +298,14 @@ html, body {
 .kpi-card.accent-red::before   { background: var(--red); }
 .kpi-card.accent-amber::before { background: var(--amber); }
 
+/* Static (non-drill) KPI cards — e.g. Wins & Awards summary */
+.kpi-card.static { cursor: default; }
+.kpi-card.static:hover {
+  transform: none;
+  box-shadow: none;
+  border-color: var(--border);
+}
+
 .kpi-label {
   font-family: var(--font-mono);
   font-size: 9.5px;
@@ -976,6 +984,30 @@ html, body {
     <div class="kpi-grid operations" id="operations-headlines">
       <!-- Populated by JS -->
     </div>
+  </section>
+
+  <!-- WINS & AWARDS BAND -->
+  <section class="section">
+    <div class="section-title">
+      <span>Wins &amp; Awards</span>
+      <span class="section-meta">Opportunities won (Awarded stage) · full award ledger · hover a row for detail</span>
+    </div>
+    <div class="kpi-grid operations" id="awards-headlines">
+      <!-- Populated by JS -->
+    </div>
+    <table class="pipeline-table awards-table" style="margin-top:20px;">
+      <thead>
+        <tr>
+          <th>Award</th>
+          <th>Stage</th>
+          <th>Award Date</th>
+          <th class="right">Value</th>
+        </tr>
+      </thead>
+      <tbody id="awards-body">
+        <!-- Populated by JS -->
+      </tbody>
+    </table>
   </section>
 
   <!-- BD CADENCE TABLE WITH SPARKLINES -->
@@ -1744,6 +1776,58 @@ function renderPipeline() {
 }
 
 // ============================================================
+// RENDERING — WINS & AWARDS
+// ============================================================
+// Awards are counted by current stage ("Awarded"), mirroring the
+// Active Pipeline KPIs — NOT gated by As_Of_Date — so a win stays
+// visible on the snapshot regardless of the selected as-of date.
+function renderAwards() {
+  const d = STATE.data;
+  const awarded = d.pipeline.filter(p => p.stage === 'Awarded');
+  const awardedTCV = awarded.reduce((sum, p) => sum + (p.value || 0), 0);
+
+  // Summary cards (stage-based, mirror Dashboard!G12 / H12)
+  const cards = [
+    { label: 'Awards Won (#)',  value: fmtCount(awarded.length),
+      sub: 'Opportunities in Awarded stage' },
+    { label: 'Awarded TCV ($)', value: fmtCurrencyShort(awardedTCV),
+      sub: 'Total contract value won' },
+  ];
+  document.getElementById('awards-headlines').innerHTML = cards.map(c => `
+    <div class="kpi-card static accent-teal">
+      <div class="kpi-label">${c.label}</div>
+      <div class="kpi-value">${c.value}</div>
+      <div class="kpi-sub">${c.sub}</div>
+    </div>
+  `).join('');
+
+  // Award ledger — most recent first
+  const tbody = document.getElementById('awards-body');
+  if (awarded.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:24px; color:var(--text-3);">No awards recorded yet</td></tr>`;
+    return;
+  }
+  const sorted = [...awarded].sort((a, b) => {
+    const ta = a.stageDate ? a.stageDate.getTime() : 0;
+    const tb = b.stageDate ? b.stageDate.getTime() : 0;
+    return tb - ta;
+  });
+  tbody.innerHTML = sorted.map(opp => {
+    const tip = opp.notes ? ` title="${String(opp.notes).replace(/"/g, '&quot;')}"` : '';
+    return `
+    <tr${tip}>
+      <td>
+        <div class="opp-name">${opp.name || opp.id}</div>
+        <div class="opp-meta">${opp.client || ''}${opp.naics ? ' · ' + opp.naics : ''}</div>
+      </td>
+      <td><span class="stage-pill stage-${opp.stage}">${opp.stage}</span></td>
+      <td>${opp.stageDate ? fmtDate(opp.stageDate) : '—'}</td>
+      <td class="right">${fmtCurrencyShort(opp.value)}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ============================================================
 // RENDERING — SCENARIO MODE
 // ============================================================
 function computeScenario(winRate, y1Pct) {
@@ -2111,6 +2195,7 @@ function handleScenarioChange() {
 function renderAll() {
   renderFinancialHeadlines();
   renderOperationsHeadlines();
+  renderAwards();
   renderBDCadence();
   renderFinancialCadence();
   renderPipeline();
