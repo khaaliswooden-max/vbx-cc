@@ -9,6 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed — NDA / Screening contact mapping (2026-07-08)
+- Filled the four blank partner contacts (previously shown as `–` in the
+  **Executed NDAs** drill-down) in `VBX_Command_Center_v1.1.xlsx`:
+  - Grit Government Solutions → Frank Culmone
+  - Novarens Systems → Reginald Phillippes
+  - FortunaBMC → Alice
+  - Invicta Solutions Group (ISG) → Thomas Radcliffe
+- Applied the same mappings to the matching rows on the **Screenings**
+  sheet (Primary Contact column) so the entity → contact link stays
+  consistent across sheets. Contact is a display-only column — no
+  `Metrics_Period` formula depends on it, and the workbook formula count
+  is unchanged (254).
+
 ### Added — Dashboard: Wins & Awards drill-down (2026-07-08)
 - The two **Wins & Awards** summary cards (**Awards Won (#)** and
   **Awarded TCV ($)**) are now **click-to-drill**, matching the Financial
