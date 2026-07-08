@@ -9,6 +9,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — Two staffing-vendor screenings (2026-07-08)
+- `Screenings` sheet gains rows #62–#63 (screen date 7/7/2026), both tied to the
+  CBO Sentry BPA (RFQ1815037) J4 LCAT sourcing lane:
+  - **#62 — NDS Ventures, LLC dba Artemis HCM** (Nick Schutt, CEO). GovCon
+    staffing/recruiting supplier evaluated for the J8/J4 key-personnel gap.
+    Disposition per screen memo: CONDITIONAL ENGAGE (staff-aug subcontract
+    preferred; hourly rate, federal subcontract vehicle, and TES consent are
+    gating). No NDA on file (commercial MCSA channel).
+  - **#63 — Zachary Piper Solutions, LLC** (Dave Ambrose, Sales Director).
+    Cleared-staffing supplier; two-path structure decision (staffing MSA vs.
+    lower-tier delivery subcontract). Disposition: HOLD MSA signature, pursue
+    subcontract terms in parallel. NDA executed 7/5/2026 (already on the `NDAs`
+    sheet, #21).
+- Both rows classified `PENDING` (styled pill already supported by the
+  dashboard) to reflect the open structure/rate decision on each.
+- Recalc validated: 0 formula errors across 254 formulas. Screenings
+  trailing-window metrics are unaffected (As-Of 6/8/2026 precedes the 7/7 screens).
+
 ### Changed — Vendor SheetJS same-origin (2026-07-08)
 - The dashboard now loads SheetJS from `dashboard/vendor/xlsx.full.min.js`
   (served same-origin) instead of `cdn.sheetjs.com`. That CDN is Cloudflare-
@@ -138,7 +156,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed — Workbook bumped to v1.1 (2026-06-09)
 - Refreshed leadership workbook to `VBX_Command_Center_v1.1.xlsx`:
   rebuilt `Pipeline` (20 active opps centered on HRSA / VA / RHTP / USAC tracks),
-  added screenings rows 57–62 (BAC, NCP, et al.) and one new partner meeting,
+  added screenings rows 57–61 (BAC, NCP, et al.) and one new partner meeting,
   rolled `As_Of_Date` forward to 2026-06-08 (also a `SUMIFS` criterion reorder
   on `Dashboard!D12` — same logic, no math impact)
 - Dashboard `REMOTE.url` and as-of-date control retargeted at the v1.1 file
