@@ -9,6 +9,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed — Pipeline: Montana Master AI award (2026-06-29)
+- `Pipeline` row **OPP-001** — *Montana AI Products & Services
+  (SPB-RFP-2026-0608GW)* moved from **Submitted → Awarded**. Visionblox is
+  an apparent successful offeror on **BOTH Track 1 and Track 2** (per the
+  State of Montana Notice of Intent to Award); the opp name is broadened to
+  *Tracks 1 & 2* accordingly. Stage Date set to **06/29/26** (NOIA received
+  from MT DOA State Procurement — Grace Waring, Contracts Officer).
+- NOIA only — **not yet an executed contract**; no work may begin until the
+  DocuSign contract is signed by all parties, so **no `Active_Projects` row
+  yet**. Marking the opp *Awarded* removes its $2M estimate from Active
+  Pipeline ($) and drops the Active Pipeline (#), which is the intended
+  effect of a win.
+- Notes record that **WC, GL ($2M/$2M) and Cyber/Info Security ($6M) COIs
+  are secured**, plus the outstanding eMACS awarded-vendor registration and
+  10-business-day insurance-doc deadline.
+- No changes to formulas (252 total, 0 errors), column order, or the
+  workbook→HTML invariant.
+
 ### Added — Pipeline: SENTRY pursuit (TES x VBX) (2026-06-27)
 - New `Pipeline` row **OPP-022** — *SENTRY (CB26-RFQ0012) — CBO IT Support
   BPA, SMA 2 Cloud Service Support (J4 + J5)*. Customer: Congressional
