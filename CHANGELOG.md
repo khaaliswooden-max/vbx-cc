@@ -9,6 +9,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed — Pipeline: pruned 17 opportunities (2026-07-08)
+- Removed `Pipeline` rows **OPP-002 through OPP-018** from the workbook
+  (`VBX_Command_Center_v1.1.xlsx`): Maryland Statewide Network Services
+  (BPM054667) FA4, WA DOH Statewide Rural Health Program (RFP 26-005C),
+  RHTP Maryland + Texas state lanes, HRSA Technical Assistance (National
+  Backbone), TN Behavioral Telehealth, TN Service Line & Co-Location,
+  OPM OIG BRIDGE BPA (RFQ1809527), VA VIPPS (RFQ1809729 Phase II),
+  NIH Data Access & Linkage BPA, VHA IHT 2.0, VA.gov Replacement Model
+  (DA01), FL & VT RHTP RPM, AR THRIVE, MD Workforce Data Clearinghouse,
+  MT RHTP CoE Implementation Vendor, and USAC Enterprise Cybersecurity
+  (IT-26-073).
+- Surviving `Pipeline` rows keep their original Opp IDs (no renumber, to
+  preserve traceability): **OPP-001** Montana AI (Awarded), **OPP-019/020/021**
+  (No-Bid), **OPP-022** SENTRY (Capture), and **OPP-023** IHS WebEHRS
+  2027-2032 (Submitted — added on `main` via #12; not in the removal list).
+  Active Pipeline now = **2 opps / $4.0M** (SENTRY + IHS WebEHRS).
+- Dashboard **Active Blockers** trimmed: removed the WA foreign-entity
+  registration, eMMA/Maryland (BPM054667), and SOC 2 Type II items — each
+  gated only the now-removed pursuits. GSA MAS Refresh 31 and Advocate IT
+  teaming blockers retained as standing items.
+- No changes to formulas (252 total, 0 errors), column order, header-row
+  position, or the workbook→HTML invariant. HTML remains fully
+  workbook-driven; KPI cards and the pipeline table recompute from the
+  pruned rows.
+
 ### Changed — Pipeline: Montana Master AI award (2026-06-29)
 - `Pipeline` row **OPP-001** — *Montana AI Products & Services
   (SPB-RFP-2026-0608GW)* moved from **Submitted → Awarded**. Visionblox is
