@@ -990,7 +990,7 @@ html, body {
   <section class="section">
     <div class="section-title">
       <span>Wins &amp; Awards</span>
-      <span class="section-meta">Opportunities won (Awarded stage) · full award ledger · hover a row for detail</span>
+      <span class="section-meta">Opportunities won (Awarded stage) · full award ledger · click a card to drill · hover a row for detail</span>
     </div>
     <div class="kpi-grid operations" id="awards-headlines">
       <!-- Populated by JS -->
@@ -1786,20 +1786,24 @@ function renderAwards() {
   const awarded = d.pipeline.filter(p => p.stage === 'Awarded');
   const awardedTCV = awarded.reduce((sum, p) => sum + (p.value || 0), 0);
 
-  // Summary cards (stage-based, mirror Dashboard!G12 / H12)
+  // Summary cards (stage-based, mirror Dashboard!G12 / H12).
+  // Both drill into the same award-detail view.
   const cards = [
     { label: 'Awards Won (#)',  value: fmtCount(awarded.length),
-      sub: 'Opportunities in Awarded stage' },
+      sub: 'Opportunities in Awarded stage', drill: { type: 'awards' } },
     { label: 'Awarded TCV ($)', value: fmtCurrencyShort(awardedTCV),
-      sub: 'Total contract value won' },
+      sub: 'Total contract value won', drill: { type: 'awards' } },
   ];
-  document.getElementById('awards-headlines').innerHTML = cards.map(c => `
-    <div class="kpi-card static accent-teal">
+  const headlines = document.getElementById('awards-headlines');
+  headlines.innerHTML = cards.map(c => `
+    <div class="kpi-card accent-teal" data-drill='${JSON.stringify(c.drill)}'>
       <div class="kpi-label">${c.label}</div>
       <div class="kpi-value">${c.value}</div>
       <div class="kpi-sub">${c.sub}</div>
+      <div class="kpi-drill-hint">Click to drill</div>
     </div>
   `).join('');
+  attachDrillHandlers(headlines);
 
   // Award ledger — most recent first
   const tbody = document.getElementById('awards-body');
@@ -1937,6 +1941,14 @@ function openDrill(drill) {
       subtitle = `${d.screenings.length} entities screened`;
       body = renderScreeningsTable(d.screenings);
       break;
+    case 'awards': {
+      const awarded = d.pipeline.filter(p => p.stage === 'Awarded');
+      const awardedTCV = awarded.reduce((s, p) => s + (p.value || 0), 0);
+      title = 'Wins & Awards — Award Detail';
+      subtitle = `${awarded.length} award${awarded.length === 1 ? '' : 's'} won · TCV ${fmtCurrencyShort(awardedTCV)}`;
+      body = renderAwardsDrill(awarded, awardedTCV);
+      break;
+    }
     case 'targetBreakdown':
       title = 'ARR Target Breakdown';
       subtitle = 'Composition of Year-1 Annual Recurring Revenue goal';
@@ -2085,6 +2097,60 @@ function renderScreeningsTable(rows) {
       <td>${r.classification ? `<span class="classification-pill class-${r.classification}">${r.classification}</span>` : ''}</td>
     </tr>`).join('')}
     </tbody></table>`;
+}
+
+function renderAwardsDrill(awarded, awardedTCV) {
+  if (!awarded || awarded.length === 0) {
+    return `<div style="padding:30px; text-align:center; color:var(--text-3);">No awards recorded yet. Move a Pipeline opportunity to the "Awarded" stage to populate this view.</div>`;
+  }
+
+  const t = STATE.data.targets;
+  const avgAward = awardedTCV / awarded.length;
+  const largest = awarded.reduce((m, p) => (p.value || 0) > (m.value || 0) ? p : m, awarded[0]);
+  const pctOfTarget = t.arrTarget ? (awardedTCV / t.arrTarget) * 100 : 0;
+
+  // Summary strip — key win metrics at a glance.
+  const stats = [
+    { label: 'Awards Won',        value: fmtCount(awarded.length) },
+    { label: 'Total Awarded TCV', value: fmtCurrencyShort(awardedTCV) },
+    { label: 'Average Award',     value: fmtCurrencyShort(avgAward) },
+    { label: 'Largest Award',     value: fmtCurrencyShort(largest.value) },
+    { label: '% of Y1 ARR Target', value: `${pctOfTarget.toFixed(1)}%` },
+  ];
+  const summary = `<div style="display:flex; flex-wrap:wrap; gap:14px; margin-bottom:20px;">
+    ${stats.map(s => `<div style="flex:1 1 140px; border:1px solid var(--border); border-radius:8px; padding:12px 14px; background:var(--surface-2);">
+      <div style="font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--text-3);">${s.label}</div>
+      <div style="font-size:20px; font-weight:700; color:var(--navy); margin-top:4px;">${s.value}</div>
+    </div>`).join('')}
+  </div>`;
+
+  // Full award ledger — most recent first.
+  const sorted = [...awarded].sort((a, b) => {
+    const ta = a.stageDate ? a.stageDate.getTime() : 0;
+    const tb = b.stageDate ? b.stageDate.getTime() : 0;
+    return tb - ta;
+  });
+  const table = `<table class="drill-table">
+    <thead><tr>
+      <th>ID</th><th>Opportunity</th><th>Client</th><th>NAICS</th>
+      <th>Award Date</th><th class="right">TCV</th><th>Notes</th>
+    </tr></thead><tbody>
+    ${sorted.map(r => `<tr>
+      <td>${r.id || ''}</td>
+      <td>${r.name || ''}</td>
+      <td>${r.client || ''}</td>
+      <td>${r.naics || ''}</td>
+      <td>${r.stageDate ? fmtDate(r.stageDate) : '—'}</td>
+      <td class="right">${fmtCurrencyShort(r.value)}</td>
+      <td style="max-width:280px; color:var(--text-3);">${r.notes || ''}</td>
+    </tr>`).join('')}
+    </tbody></table>`;
+
+  const footer = `<div style="padding-top:14px; color:var(--text-3); font-style:italic;">
+    Awarded TCV of ${fmtCurrencyShort(awardedTCV)} covers ${pctOfTarget.toFixed(1)}% of the ${fmtCurrency(t.arrTarget)} Year-1 ARR target. Awards are counted by current Pipeline stage ("Awarded") and are not gated by the as-of date, so a win stays on the snapshot regardless of the selected reference date.
+  </div>`;
+
+  return summary + table + footer;
 }
 
 function renderTargetBreakdown() {
