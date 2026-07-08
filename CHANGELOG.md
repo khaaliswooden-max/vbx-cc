@@ -9,6 +9,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — Dashboard: Wins & Awards panel (2026-07-08)
+- New **Wins & Awards** band on the HTML dashboard (between Operations and
+  BD Cadence) so a won opportunity is visible instead of silently dropping
+  out of the pipeline once marked *Awarded*. Two teal summary cards —
+  **Awards Won (#)** and **Awarded TCV ($)** — plus an **award ledger**
+  table (Award · Stage · Award Date · Value), most-recent-first, with each
+  opp’s notes on row hover.
+- Metrics are **stage-based** (count of `Awarded`-stage opps), mirroring the
+  Active Pipeline cards and deliberately **not** gated by `As_Of_Date`, so a
+  win stays visible even when the snapshot date predates the award (the
+  Montana award dated 06/29/26 shows at the 06/08/26 as-of).
+- **Workbook (`Dashboard` sheet):** added matching formulas to the OPERATIONS
+  band to preserve the workbook→HTML invariant —
+  `G12 =COUNTIF(Pipeline!E5:E1000,"Awarded")` and
+  `H12 =SUMIF(Pipeline!E5:E1000,"Awarded",Pipeline!F5:F1000)`, labelled
+  *Awards Won (#)* / *Awarded TCV ($)*. Formula count 252 → **254**, 0 errors.
+- Verified end-to-end headlessly (Chromium) against the current workbook:
+  panel renders **Awards Won 1 / Awarded TCV $2.0M** and the Montana award
+  row; Active Pipeline unchanged at 2 / $4.0M. No new fonts, colors, or
+  dependencies.
+
 ### Removed — Pipeline: pruned 17 opportunities (2026-07-08)
 - Removed `Pipeline` rows **OPP-002 through OPP-018** from the workbook
   (`VBX_Command_Center_v1.1.xlsx`): Maryland Statewide Network Services
