@@ -9,6 +9,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed — Insurance premiums added to Yearly Expense Budget (2026-07-09)
+- Four annual business-insurance policies were folded into the operating expense
+  base on `Targets` (cell C6): Errors & Omissions ($3,035), Cyber Liability
+  ($8,500), General Liability ($353), and Workers' Compensation ($473) — total
+  **$12,361** in annual premiums (premiums only; policy taxes/fees excluded).
+- **Yearly Expense Budget** rises from **$212,270** to **$224,631**.
+- P/L reconciliation recomputes off C6 via formula (C12/C13):
+  - **Run-Rate P/L** (Confirmed Revenue $164,400 − Budget) moves from –$47,870 to
+    **–$60,231**.
+  - **Gap to Break-Even** moves from $47,870 to **$60,231**.
+  - **Gap to ARR Target** is unchanged at **$335,600** (a function of the ARR
+    target and confirmed revenue, not the expense budget).
+- HTML dashboard income-statement `DEFAULTS` (`expenseBudget`, `runRatePL`,
+  `breakEvenGap`) updated to mirror the workbook; the P/L drill-down subtitle now
+  renders the Run-Rate P/L figure dynamically instead of a hardcoded string.
+
 ### Fixed — HCPSS revenue start date corrected to May 2026 (2026-07-09)
 - The HCPSS project did not begin until May 2026, so the four pre-start monthly
   retainer invoices were removed from `Revenue_Ledger`:

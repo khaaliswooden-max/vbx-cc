@@ -318,8 +318,8 @@ Run before any commit that touches parsing logic.
 | Term | Definition |
 |---|---|
 | **ARR** | Annual Recurring Revenue. The Y1 ARR target is $500,000. |
-| **Burn rate / Run-Rate P/L** | Current annual P/L on confirmed revenue only (no new wins). Currently –$47,870. |
-| **Break-even gap** | New revenue needed to bring Run-Rate P/L to zero. Currently $47,870. |
+| **Burn rate / Run-Rate P/L** | Current annual P/L on confirmed revenue only (no new wins). Currently –$60,231. |
+| **Break-even gap** | New revenue needed to bring Run-Rate P/L to zero. Currently $60,231. |
 | **TCV** | Total Contract Value (sum across the contract life). |
 | **T-7d / T-30d / T-91d** | Trailing 7-day / 30-day / 91-day windows ending at `As_Of_Date`. |
 | **As-of Date** | The reference date driving all trailing-window math. Defined as workbook named range `As_Of_Date` = `Dashboard!$C$4`. |
