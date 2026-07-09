@@ -1180,10 +1180,10 @@ const STORAGE_KEY = 'vbx_command_center_v1';
 const DEFAULTS = {
   targets: {
     arrTarget: 500000,
-    expenseBudget: 212270,
+    expenseBudget: 224631,
     confirmedRev: 164400,
-    runRatePL: -47870,
-    breakEvenGap: 47870,
+    runRatePL: -60231,
+    breakEvenGap: 60231,
     arrGap: 335600,
     bdMonthly: { Screenings: 26, NDAs: 9, Agreements: 9, Meetings: 9, NewPipelineOpps: 4 },
   },
@@ -1959,7 +1959,7 @@ function openDrill(drill) {
       break;
     case 'plBreakdown':
       title = 'P/L Reconciliation — Income Statement Bottom Line';
-      subtitle = 'How current confirmed revenue × annual expense budget produces –$47,870';
+      subtitle = `How current confirmed revenue × annual expense budget produces ${fmtCurrency(STATE.data.targets.runRatePL)}`;
       body = renderPLBreakdown();
       break;
   }
