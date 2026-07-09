@@ -9,6 +9,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed — HCPSS revenue start date corrected to May 2026 (2026-07-09)
+- The HCPSS project did not begin until May 2026, so the four pre-start monthly
+  retainer invoices were removed from `Revenue_Ledger`:
+  - `INV-2026-001` (1/31/2026), `INV-2026-003` (2/28/2026),
+    `INV-2026-005` (3/31/2026), `INV-2026-007` (4/30/2026) — $11,200 each.
+- HCPSS now bills from `INV-2026-009` (5/31/2026) forward. The First Brands
+  Group retainer stream (Jan → Jun) is unchanged. Ledger is now 8 invoices
+  (was 12).
+- Downstream figures recalculate off the ledger via formula (no hardcoded
+  edits): **Revenue Booked YTD** at As-Of 6/8/2026 drops from $68,500 to
+  **$23,700** (−$44,800); trailing-window revenue (T-7d/T-30d/T-91d) and the
+  Net P/L "actuals" row follow suit.
+- The annualized run-rate inputs on `Targets` (C9 HCPSS = $134,400, C10 FBG =
+  $30,000) are intentionally **unchanged**: run-rate P/L and the break-even /
+  ARR gaps are forward steady-state figures at the current $11,200/mo billing
+  rate, which the start-month correction does not alter.
+- Recalc validated: 0 formula errors across 254 formulas.
+
 ### Added — Two staffing-vendor screenings (2026-07-08)
 - `Screenings` sheet gains rows #62–#63 (screen date 7/7/2026), both tied to the
   CBO Sentry BPA (RFQ1815037) J4 LCAT sourcing lane:
