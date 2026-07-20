@@ -9,6 +9,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — Five July pursuits logged to Pipeline (2026-07-19)
+- Consolidated the July qualification batch into the `Pipeline` sheet (OPP-024
+  through OPP-027; the fifth pursuit, IHS WebEHRS, was already logged as OPP-023
+  and its RFI response confirmed transmitted before deadline):
+  - **OPP-024 — WA HCA FSIPAP (RFI 2026HCA13)**: `Qualified`. The only live
+    respond in the batch — narrow policy-transformation lane only, RFI due
+    8/19/26 5pm PT, ≤10 pages, B&P ≤$6K. Score 4.6/10 Moderate. No value booked
+    (no published ceiling), so it cannot distort active-pipeline TCV or the
+    win-rate scenario math.
+  - **OPP-025 — WA DRS E-File Tax Reporting (RFP 26-03)**: `No-Bid` (Gate 1,
+    7/10 — MQ 1.3 restricts offerors to IRS-authorized e-file providers).
+  - **OPP-026 — Army Enterprise IT Support, OTSG/MEDCOM (W9124J-27-R-ENTR)**:
+    `No-Bid` prime and sub (7/10 — Secret FCL, CMMI-SVC L3, vendor-type
+    mismatch; SSN window closed 7/16).
+  - **OPP-027 — DoS BASE (19AQMM26N0296)**: `No-Bid` as prime (7/7 — geospatial
+    domain mismatch); conditional sub lane expired ~7/15 with no geospatial
+    prime surfaced, collapsing to a straight no-bid.
+- Advanced the snapshot reference date `Dashboard!C4` (`As_Of_Date`) from
+  06/08/2026 to **07/19/2026**.
+- Workbook recalculated clean (254 formulas, 0 errors); `verify_parse.js`
+  passes all 11 HTML-vs-workbook metric checks against the new as-of date.
+
 ### Changed — Insurance premiums added to Yearly Expense Budget (2026-07-09)
 - Four annual business-insurance policies were folded into the operating expense
   base on `Targets` (cell C6): Errors & Omissions ($3,035), Cyber Liability
