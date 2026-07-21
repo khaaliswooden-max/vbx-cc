@@ -9,6 +9,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — Three finalized submissions logged to Pipeline (2026-07-21)
+- Logged three finalized responses to the `Pipeline` sheet (OPP-028 through
+  OPP-030), all at `Capture` stage pending transmittal confirmation — each row
+  flips to `Submitted` (with StageDate) when its send is confirmed:
+  - **OPP-028 — MARFORRES AI Manpower & Readiness (Sources Sought
+    M6786126IMKMAI)**: USMC Forces Reserve (MFR G-1 / MCIRSA). AI-enabled
+    manpower modeling, readiness analytics, and personnel allocation
+    (IRR/SMCR). Response and cover letter finalized via the
+    solicitation-response gates; send scheduled by 7/29 (due 7/30 12:00pm CDT),
+    gated on the metric/certification checklist. NAICS not stated on the
+    notice; set-aside blank, with SB shaping questions embedded in the
+    transmittal.
+  - **OPP-029 — DHA ARMOR Integrated Workforce & Readiness Platform (RFI
+    ARMOR001)**: Defense Health Agency (DHMS-CD). Tier 1 fit; all five use
+    cases addressed within the 10-page cap; §3.5 OCI access granted. Send
+    target 7/22 12:00pm EDT (hard wall worst-cased at 5:00pm). One open ruling
+    before send: the GSA SIN line — reconciled state per the CC Blockers panel
+    is SIN 54151HEAL held but under Refresh 31 remediation (7 deficiencies
+    open); cover currently uses the conservative "none currently held"
+    wording pending the owner's call. Anticipated RFP flagged as a pipeline
+    priority for scoring.
+  - **OPP-030 — USGS NEIC AI/ML & Data Streaming Development (Sources Sought
+    140G0226Q0049)**: USGS / DOI (OAG-Denver). Tier 2/adjacent fit with candor
+    positioning (transferable production AI/data engineering, no seismology
+    claims); five software-development task areas addressed. Send target 7/23
+    EOD (due 7/24, deadline-timezone discrepancy worst-cased to EDT). Open
+    pre-send check: verify the SAM Attachments/Links tab for response
+    instructions.
+- No value booked on any of the three (Sources Sought / RFI stage — no
+  published ceilings), so active-pipeline TCV and win-rate scenario math are
+  unaffected. `As_Of_Date` remains 07/19/2026.
+- Workbook recalculated clean (254 formulas, 0 errors); `verify_parse.js`
+  passes all 11 HTML-vs-workbook metric checks.
+
 ### Added — Five July pursuits logged to Pipeline (2026-07-19)
 - Consolidated the July qualification batch into the `Pipeline` sheet (OPP-024
   through OPP-027; the fifth pursuit, IHS WebEHRS, was already logged as OPP-023
