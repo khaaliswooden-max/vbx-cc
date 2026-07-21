@@ -20,8 +20,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   math, and the only prior trace was the "New Pipeline Opps" cadence count.
 ### Added — Three finalized submissions logged to Pipeline (2026-07-21)
 - Logged three finalized responses to the `Pipeline` sheet (OPP-028 through
-  OPP-030), all at `Capture` stage pending transmittal confirmation — each row
-  flips to `Submitted` (with StageDate) when its send is confirmed:
+  OPP-030). All three were transmitted 7/21/2026 by 7:00am CT — ahead of every
+  deadline — and now sit at `Submitted` stage (StageDate 07/21/2026):
   - **OPP-028 — MARFORRES AI Manpower & Readiness (Sources Sought
     M6786126IMKMAI)**: USMC Forces Reserve (MFR G-1 / MCIRSA). AI-enabled
     manpower modeling, readiness analytics, and personnel allocation
