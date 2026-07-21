@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — No-Bid & Screening Log section on the dashboard (2026-07-21)
+- New full-width section between the pipeline/scenario row and Active Blockers,
+  rendering every `Pipeline` row in the `No-Bid` or `Lost` stage: opportunity,
+  decision pill, decision date (Stage Date), and rationale (Notes, clamped to
+  three lines with the full text on hover).
+- HTML-only (`renderScreeningLog()` in the dashboard); the data was always in
+  the workbook — previously no dashboard surface displayed these rows. They
+  remain correctly excluded from active-pipeline counts, TCV, and scenario
+  math, and the only prior trace was the "New Pipeline Opps" cadence count.
+
 ### Added — Five July pursuits logged to Pipeline (2026-07-19)
 - Consolidated the July qualification batch into the `Pipeline` sheet (OPP-024
   through OPP-027; the fifth pursuit, IHS WebEHRS, was already logged as OPP-023
