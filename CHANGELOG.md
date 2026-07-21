@@ -24,11 +24,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **OPP-029 — DHA ARMOR Integrated Workforce & Readiness Platform (RFI
     ARMOR001)**: Defense Health Agency (DHMS-CD). Tier 1 fit; all five use
     cases addressed within the 10-page cap; §3.5 OCI access granted. Send
-    target 7/22 12:00pm EDT (hard wall worst-cased at 5:00pm). One open ruling
-    before send: the GSA SIN line — reconciled state per the CC Blockers panel
-    is SIN 54151HEAL held but under Refresh 31 remediation (7 deficiencies
-    open); cover currently uses the conservative "none currently held"
-    wording pending the owner's call. Anticipated RFP flagged as a pipeline
+    target 7/22 12:00pm EDT (hard wall worst-cased at 5:00pm). The GSA SIN
+    line ruling was resolved 7/21 (owner): the conservative "none currently
+    held" wording stands — reconciled state per the CC Blockers panel is SIN
+    54151HEAL held but under Refresh 31 remediation (7 deficiencies open); the
+    cite-SIN alternative was declined. Anticipated RFP flagged as a pipeline
     priority for scoring.
   - **OPP-030 — USGS NEIC AI/ML & Data Streaming Development (Sources Sought
     140G0226Q0049)**: USGS / DOI (OAG-Denver). Tier 2/adjacent fit with candor
@@ -39,7 +39,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     instructions.
 - No value booked on any of the three (Sources Sought / RFI stage — no
   published ceilings), so active-pipeline TCV and win-rate scenario math are
-  unaffected. `As_Of_Date` remains 07/19/2026.
+  unaffected.
+- Advanced the snapshot reference date `Dashboard!C4` (`As_Of_Date`) from
+  07/19/2026 to **07/21/2026** so the new entries count in the trailing
+  windows (New Pipeline Opps T-30d: 6 → 9).
 - Workbook recalculated clean (254 formulas, 0 errors); `verify_parse.js`
   passes all 11 HTML-vs-workbook metric checks.
 
