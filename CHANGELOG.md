@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed — Advocate IT teaming blocker resolved (2026-07-22)
+- Removed the "Advocate IT teaming agreement (Thomas Duffy) — not executed"
+  item from the dashboard **Active Blockers** list: a three-way teaming
+  agreement between Advocate IT, AG Grace, and VBX has been signed. GSA MAS
+  Refresh 31 remediation remains the sole standing blocker.
+
 ### Added — No-Bid & Screening Log section on the dashboard (2026-07-21)
 - New full-width section between the pipeline/scenario row and Active Blockers,
   rendering every `Pipeline` row in the `No-Bid` or `Lost` stage: opportunity,
