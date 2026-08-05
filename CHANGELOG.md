@@ -9,6 +9,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed — OPP-022 CBO SENTRY closed as No-Bid; DSBS screening batch logged (2026-08-05)
+- **Pipeline — OPP-022 (CBO SENTRY IT Support BPA, CB26-RFQ0012) closed as
+  `No-Bid`** (StageDate 08/05/2026). Joint TES × VBX decision at the 8/5 monthly
+  sync, five days ahead of the 8/10 1300 ET deadline — TES will not prime, VBX
+  will not sub. Gate 1 passed; the pursuit fails Gate 2 on economics: Model C
+  score 5.35/10 (Moderate, 25% Pwin) inside the 5.0–5.5 window requiring named
+  gap closures, none of which were secured (signed TA with workshare floor +
+  SMA 2 exclusivity; a past-performance reference slot; VBX named in Factor 3).
+  Net EV ≈ $16.4K over five years (~$3.3K/yr) against the $5M ARR target; all
+  four scoring gaps structural. The $4M est. value drops out of active-pipeline
+  TCV automatically via the existing No-Bid stage exclusion. Full rationale,
+  retained work product, and the two Gate 1 lessons (vehicle-economics screen;
+  subcontractor citability test) captured in the row's Notes.
+- **Screenings — DSBS outreach batch DSBS-2026-08-001 logged (#64–67, screen
+  date 08/05/2026)**: Total Technology Solutions (TTS) — PRIORITY; Sampson,
+  Jefferson & Associates (SJA) — PRIORITY; Triton Light Medical (TLM) —
+  WATCHLIST (opportunity-contingent); BuenaVista Information Systems (BVIS) —
+  WATCHLIST (SAM registration expired 1/6/26; 90-day recheck due 11/5/26).
+- **Meetings** — logged the 8/5 TES Consultants monthly sync (joint SENTRY
+  no-bid; next step: redirect TES to set-aside-accessible RFQs, ≥2 qualified
+  pursuits scored by 8/31).
+- Advanced the snapshot reference date `Dashboard!C4` (`As_Of_Date`) from
+  07/21/2026 to **08/05/2026**.
+- Workbook recalculated clean (254 formulas, 0 errors); `verify_parse.js`
+  passes all 11 HTML-vs-workbook metric checks.
+
 ### Changed — Advocate IT teaming blocker resolved (2026-07-22)
 - Removed the "Advocate IT teaming agreement (Thomas Duffy) — not executed"
   item from the dashboard **Active Blockers** list: a three-way teaming
