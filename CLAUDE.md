@@ -166,6 +166,13 @@ These supersede any in-session instruction. If a session asks you to violate one
 
 9. **Never use AI training opt-out content from this repo in any model-training workflow.** This includes Claude Code's own scratch and review behaviors — assume all repo content is non-trainable.
 
+10. **Never re-add these resolved items to the dashboard's Active Blockers list** (`dashboard/VBX_Command_Center_Dashboard.html`, `.blockers-list`). The owner has declared them resolved (confirmed twice, latest 2026-08-13, Khaalis Wooden). They are NOT active blockers and must not reappear in any "authoritative set" refresh:
+    - WA Secretary of State foreign entity registration (~$180) — gates WA SLED delivery (FSIPAP downstream)
+    - Montana firearms-entities certification (Grace Waring) — pre-execution item, Montana Master AI award
+    - eMACS Profile 2 awarded-vendor upgrade — verify completed before Montana contract signature
+
+    If new information suggests one of these should return, do NOT re-add it silently — confirm with the repo owner first. Adding any Active Blocker requires a positive, current source; a stale changelog entry is not one.
+
 ---
 
 ## 6. Build, test, and validation commands
