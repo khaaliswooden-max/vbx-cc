@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed — Three items cleared from Active Blockers (2026-08-13, owner-directed, 2nd request)
+Per repo owner (Khaalis Wooden), the following are **resolved and are not active
+blockers**. They were removed from the dashboard `.blockers-list` and must not be
+re-added by any future "authoritative set" refresh (now codified as Hard Rule #10
+in `CLAUDE.md`):
+
+- WA Secretary of State foreign entity registration (~$180) — gates WA SLED delivery (FSIPAP downstream)
+- Montana firearms-entities certification (Grace Waring) — pre-execution item, Montana Master AI award
+- eMACS Profile 2 awarded-vendor upgrade — verify completed before Montana contract signature
+
+This corrects the same-day "Active Blockers refreshed" entry below, which had
+re-listed these three. The remaining Active Blockers are GSA MAS Refresh 31 and
+SOC 2 Type II only.
+
 ### Changed — August 2026 mid-month BD update logged (2026-08-13)
 Consolidated the 8/13 BD Command Center update (RavenOne channel + CAGAIL/ICAT,
 FSIPAP, Montana, NIST QNAP, WA DES 13225) into the system-of-record workbook and
@@ -53,13 +67,14 @@ the leadership dashboard. Advanced the snapshot reference date `Dashboard!C4`
 - **Meetings — 2 rows (both 8/13):** CAGAIL ICAT teaming call (structure change,
   "Shan" prime risk, risk memo + approved language block) and the RavenOne
   intro (four VA/CDC opportunities surfaced; decision email drafted).
-- **Dashboard — Active Blockers refreshed** to the current authoritative set:
-  GSA MAS Refresh 31, SOC 2 Type II, WA foreign-entity registration, Montana
-  firearms-entities certification, and eMACS Profile 2. Removed the resolved
-  Advocate IT teaming item and the dormant Maryland eMMA item.
+- **Dashboard — Active Blockers refreshed.** ⚠️ **Superseded** by the "Three
+  items cleared" entry above: this refresh incorrectly re-listed the WA
+  foreign-entity registration, Montana firearms-entities certification, and
+  eMACS Profile 2, which the owner had already declared resolved. The correct
+  standing set is **GSA MAS Refresh 31 and SOC 2 Type II only**. (Also removed
+  the resolved Advocate IT teaming item and the dormant Maryland eMMA item.)
 - **Dashboard (HTML) — default snapshot advanced to 08/13/2026**
-  (`STATE.asOfDate` + the as-of input), Active Blockers mirrored to the five
-  above, and **GSA MAS SIN 54151HEAL removed from the footer** to honor the
+  (`STATE.asOfDate` + the as-of input), and **GSA MAS SIN 54151HEAL removed from the footer** to honor the
   standing "SIN suppressed from all document furniture pending Refresh 31"
   rule on this publicly-served artifact (CAGE + UEI remain).
 - **Validation:** workbook recomputed clean (254 formulas, cached results
