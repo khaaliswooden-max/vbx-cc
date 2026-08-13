@@ -9,6 +9,67 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed — August 2026 mid-month BD update logged (2026-08-13)
+Consolidated the 8/13 BD Command Center update (RavenOne channel + CAGAIL/ICAT,
+FSIPAP, Montana, NIST QNAP, WA DES 13225) into the system-of-record workbook and
+the leadership dashboard. Advanced the snapshot reference date `Dashboard!C4`
+(`As_Of_Date`) from **08/05/2026 to 08/13/2026**.
+
+- **Pipeline — 7 new rows (OPP-031 … OPP-037):**
+  - **OPP-031 — CMS ICAT RFI (270196, HHS-RADV)** → `Capture`. Teamed with CAGAIL
+    LLC (PRIORITY, opportunity-scoped; NDA-before-substance). Solo 5.60 / teamed
+    6.38; Pwin 45–50%. KPMG structurally conflicted incumbent. Drafting confined
+    to Mon 8/17 to protect FSIPAP; CAGAIL NDA drafted 8/12, execution + scope memo
+    due 8/14; RFI due 8/20 10:00 ET. Notes carry the unresolved "Shan" prime /
+    Gate-0-COI risk and the two KW go/no-go decisions due 8/14.
+  - **OPP-032 — NIST QNAP (RFQ1816699 / NB676020-26-01781)** → `Capture`. Closed
+    7/1; TES Consultants prime, VBX technical-sub workshare posture (PhD quantum
+    key personnel) on the pending award only.
+  - **OPP-033 — WA DES 13225 CAT Tool** → `No-Bid` (8/13). Gate 1 vendor-type
+    mismatch (COTS SaaS + live demo; VBX = integrator). Salvaged WA purchaser
+    intel into the FSIPAP account map.
+  - **OPP-034 — VA Digital GI Bill RFI (36C10D26Q0186)** → `Qualified`
+    (PURSUE-CONDITIONAL). RavenOne channel; 4.70 Moderate, 25% Pwin; RFI due
+    9/11. Pre-conditions: RavenOne Gate 0 → NDA → teaming w/ workshare floor.
+  - **OPP-035 — VA PATS-R (36C10B26Q0662)** → `Identified` (WATCH). RavenOne
+    channel; prelim 4.80 (low conf.); SAM alert by 8/14, re-score at strategy
+    release.
+  - **OPP-036 — CDC KMTSS (SSN26-7571-CDC96901)** → `No-Bid` (niche-sub-only).
+    RavenOne channel; 3.75 Low, 10% Pwin.
+  - **OPP-037 — VA BioDose 23.x** → `No-Bid` (KILLED at Gate 1). RavenOne
+    channel; decline sent with DGB redirect. Authoritative record — do not
+    regenerate.
+- **Pipeline — OPP-024 WA HCA FSIPAP** advanced `Qualified` → `Capture`
+  (StageDate 08/13), notes refreshed for Posture B, governing 8/19 17:00 PT
+  deadline, DTR gap, and the WA DES 13225 account-map intel.
+- **Screenings — 6 new rows (#68–#73):** RavenOne Enterprises LLC (Charles M.
+  Cedeno; HUBZone + SDVOSB self-reported; PENDING-Gate-0), CAGAIL LLC (Lavanya
+  Kanchadapu; PRIORITY, opportunity-scoped), Vedic Professional Services,
+  WhitworthKee, Allele Consulting (all PENDING pending 8/14 classification), and
+  IronHull USA LLC (Robert Foucha; WATCHLIST, firm #8).
+- **NDAs — 3 executed NDAs logged (#23–#25):** Vedic Professional Services
+  (8/6), WhitworthKee (8/13), Allele Consulting (8/13). The CAGAIL NDA (drafted
+  8/12) is **not** in the executed register — execution is due 8/14.
+- **Meetings — 2 rows (both 8/13):** CAGAIL ICAT teaming call (structure change,
+  "Shan" prime risk, risk memo + approved language block) and the RavenOne
+  intro (four VA/CDC opportunities surfaced; decision email drafted).
+- **Dashboard — Active Blockers refreshed** to the current authoritative set:
+  GSA MAS Refresh 31, SOC 2 Type II, WA foreign-entity registration, Montana
+  firearms-entities certification, and eMACS Profile 2. Removed the resolved
+  Advocate IT teaming item and the dormant Maryland eMMA item.
+- **Dashboard (HTML) — default snapshot advanced to 08/13/2026**
+  (`STATE.asOfDate` + the as-of input), Active Blockers mirrored to the five
+  above, and **GSA MAS SIN 54151HEAL removed from the footer** to honor the
+  standing "SIN suppressed from all document furniture pending Refresh 31"
+  rule on this publicly-served artifact (CAGE + UEI remain).
+- **Validation:** workbook recomputed clean (254 formulas, cached results
+  refreshed via an in-place recalc; LibreOffice was unavailable in the build
+  environment). `verify_parse.js` passes all 11 HTML-vs-workbook metric checks
+  at As_Of 08/13/2026.
+- **Flagged for the owner (not auto-logged):** the Saarthee LLC SSA (7/6) is
+  still absent from the `Agreements` register — deferred pending confirmation of
+  the instrument type + filename rather than fabricate them.
+
 ### Changed — OPP-022 CBO SENTRY closed as No-Bid; DSBS screening batch logged (2026-08-05)
 - **Pipeline — OPP-022 (CBO SENTRY IT Support BPA, CB26-RFQ0012) closed as
   `No-Bid`** (StageDate 08/05/2026). Joint TES × VBX decision at the 8/5 monthly
