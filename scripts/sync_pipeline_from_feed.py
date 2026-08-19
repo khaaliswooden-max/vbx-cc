@@ -136,12 +136,20 @@ def main() -> int:
         print("ABORT: formula set changed — refusing to save. Delta:", sorted(diff)[:20])
         return 2
 
-    if changed == 0 and not assignments:
+    # Save the workbook ONLY when a cell actually changed. In-memory id
+    # assignments are not, by themselves, a reason to save: on a local run they
+    # are not persisted to the feed, so re-deriving the same id next run would
+    # otherwise re-save an unchanged binary every time (dirtying it and inviting
+    # an accidental workbook commit). Freezing ids to the feed is separate and
+    # main/CI-only (--write-ids).
+    feed_will_change = bool(assignments) and write_ids
+    if changed == 0 and not feed_will_change:
         print(f"Pipeline already in sync with feed ({len(records)} rows). No write.")
         return 0
 
-    wb.save(wb_path)
-    if assignments and write_ids:
+    if changed > 0:
+        wb.save(wb_path)
+    if feed_will_change:
         pf.dump_feed(feed_path, records)  # freeze id assignments (main/CI only)
         print(f"Froze {len(assignments)} new id(s) into {feed_path}")
     print(f"Synced {len(records)} Pipeline rows ({changed} cell change(s)) -> {wb_path}")
