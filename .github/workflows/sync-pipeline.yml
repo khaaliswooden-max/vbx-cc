@@ -1,0 +1,68 @@
+name: Sync Pipeline feed into workbook
+
+# The Pipeline sheet's source of record is the text-mergeable feed
+# data/pipeline_feed.jsonl. Feature branches append lines to the feed (git
+# auto-merges concurrent appends); the binary workbook is regenerated from the
+# feed HERE, on main — the single serialization point — so it never conflicts.
+#
+# On a PR: validate the feed and preview OPP-ID assignment (no writes).
+# On push to main: sync feed -> workbook, then commit the regenerated workbook
+# (and any newly frozen OPP-IDs) back to main.
+#
+# Loop safety: pushes made with GITHUB_TOKEN do not trigger new workflow runs,
+# and the sync is idempotent (frozen IDs never reassign), so it converges in one
+# run even if re-triggered. `[skip ci]` is added as belt-and-suspenders.
+
+on:
+  pull_request:
+    paths:
+      - "data/pipeline_feed.jsonl"
+      - "scripts/pipeline_feed.py"
+      - "scripts/sync_pipeline_from_feed.py"
+  push:
+    branches: [main]
+    paths:
+      - "data/pipeline_feed.jsonl"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-pipeline-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  check:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install "openpyxl>=3.1.2,<4.0.0"
+      - name: Validate feed + preview ID assignment
+        run: python scripts/sync_pipeline_from_feed.py data/pipeline_feed.jsonl VBX_Command_Center_v1.1.xlsx --check
+
+  sync:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install "openpyxl>=3.1.2,<4.0.0"
+      - name: Sync feed -> workbook
+        run: python scripts/sync_pipeline_from_feed.py data/pipeline_feed.jsonl VBX_Command_Center_v1.1.xlsx
+      - name: Commit regenerated workbook (if changed)
+        run: |
+          if [ -n "$(git status --porcelain VBX_Command_Center_v1.1.xlsx data/pipeline_feed.jsonl)" ]; then
+            git config user.name  "vbx-pipeline-sync[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add VBX_Command_Center_v1.1.xlsx data/pipeline_feed.jsonl
+            git commit -m "chore(pipeline): sync workbook from feed [skip ci]"
+            git push
+          else
+            echo "Workbook already in sync with feed — nothing to commit."
+          fi

@@ -148,6 +148,7 @@ These supersede any in-session instruction. If a session asks you to violate one
 
 1. **Never commit real operational data to the repo.** No actual revenue figures, no partner names, no pipeline values, no executed NDA recipient names. Use the `data/targets_template.xlsx` schema-only template for any committed sample data. All real-data workbooks live in `output/` (which is gitignored).
    - **Owner-authorized exception (2026-06-05, Khaalis Wooden):** the single leadership workbook `VBX_Command_Center_v1.xlsx` MAY be committed at the repo root and published (see Rule #7) to power the auto-updating leadership dashboard. This exception covers ONLY that one file. All other real-data workbooks remain prohibited and `output/` stays gitignored. Prefer publishing a sanitized `data/leadership_feed.xlsx` over the full workbook when feasible.
+   - **Owner-authorized exception (2026-08-19, Khaalis Wooden):** the text-mergeable Pipeline feed `data/pipeline_feed.jsonl` (and the OPP-IDs the sync writes back into it) MAY be committed. It holds the same Pipeline data already permitted in the leadership workbook, re-encoded as one JSON line per opportunity so concurrent branches merge without binary conflicts (see Workflow F). ⚠️ This is plaintext and therefore greppable — it is NOT published (the Pages workflow in Rule #7 serves only the dashboard + `leadership_feed.xlsx`, never `pipeline_feed.jsonl`), and Rules #7/#8 still bind anything served. This exception covers ONLY that one file. All other real-data files remain prohibited.
 
 2. **Never modify the LICENSE file or remove proprietary notices.**
 
@@ -269,6 +270,37 @@ The operator may ask to back-fill data into input sheets (e.g., "add the last 6 
 3. Sort by date when populating to preserve chronological order
 4. Re-run build + validate
 5. If the historical data contains partner names, NDA references, or revenue figures, **the back-fill block must not be committed** — populate it once, generate the workbook, and revert the script before commit (or use a gitignored `scripts/_seed_data_local.py` that the main script imports if present)
+
+### Workflow F — Add or edit a Pipeline opportunity (via the text feed)
+
+The `Pipeline` sheet's source of record is the text-mergeable feed
+`data/pipeline_feed.jsonl` — one JSON object per opportunity, **one physical line
+each**. This is the merge-safe way to add pipeline rows: because the workbook is a
+binary, two branches that both edit the workbook's `Pipeline` sheet conflict on the
+whole file, and sequential OPP-IDs collide. Editing the feed instead lets git
+auto-merge concurrent appends, and OPP-IDs are assigned deterministically at sync
+time so they never collide.
+
+1. **Append (or edit) one line** in `data/pipeline_feed.jsonl`. Give the record a
+   unique `key` (the solicitation number or a slug) and the fields in
+   `scripts/pipeline_feed.py` `COLUMNS`. **Do NOT set `opp_id`** for a new
+   opportunity — the sync assigns and freezes the next free `OPP-0NN`. Dates are
+   ISO `YYYY-MM-DD`; `value` is an integer or `null`; `stage` is one of the
+   `STAGES`. Never hand-edit the `Pipeline` sheet in the binary workbook for adds.
+2. **Sync locally to preview:** `python scripts/sync_pipeline_from_feed.py`
+   (rewrites only the `Pipeline` input rows, asserts the 254-formula set is
+   unchanged, writes assigned IDs back into the feed). It is idempotent and
+   lossless — re-syncing an in-sync feed writes nothing.
+3. **Commit the feed** (and its DOCX record, if any). You do **not** need to commit
+   the regenerated workbook from a feature branch — the
+   `.github/workflows/sync-pipeline.yml` job regenerates and commits the workbook
+   on `main` after merge, where there is no concurrency. On a PR the same workflow
+   runs `--check` to validate the feed and preview ID assignment.
+4. To rebuild the feed from the workbook if they ever drift:
+   `python scripts/export_pipeline_to_feed.py` (one-way, workbook → feed).
+
+Note: this covers the `Pipeline` sheet only. Other input sheets are still edited in
+Excel / via the builder per Workflows C and E.
 
 ---
 
