@@ -9,6 +9,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — Text-mergeable Pipeline feed + deterministic sync (2026-08-19)
+Introduced `data/pipeline_feed.jsonl` as the source of record for the `Pipeline`
+sheet, to end binary-workbook merge conflicts and OPP-ID collisions when multiple
+branches add pipeline rows concurrently. The workbook remains the system of record
+the dashboard reads (Hard Rule #4 invariant intact); the feed is the merge-safe
+input source, synced into the workbook at a single serialization point (`main`).
+
+- **`data/pipeline_feed.jsonl`** — one JSON object per opportunity, one physical
+  line each, so git auto-merges concurrent appends. Owner-authorized addition to
+  the Rule #1 real-data exception (2026-08-19, Khaalis Wooden); not published.
+  Seeded losslessly from the current 25 Pipeline rows (round-trip verified: 0 cell
+  diffs).
+- **`scripts/pipeline_feed.py`** — schema, loader/dumper, deterministic OPP-ID
+  assignment, and validation helpers.
+- **`scripts/sync_pipeline_from_feed.py`** — feed → workbook Pipeline rows.
+  Value-diff writer (idempotent), assigns/freezes OPP-IDs, and **asserts the
+  254-formula set is unchanged** before saving. `--check` mode validates only.
+- **`scripts/export_pipeline_to_feed.py`** — one-way workbook → feed rebuild
+  (migration + drift rescue).
+- **`.github/workflows/sync-pipeline.yml`** — validates the feed on PRs; on push to
+  `main` regenerates the workbook from the feed and commits it back (loop-safe:
+  `GITHUB_TOKEN` pushes don't re-trigger CI, sync is idempotent, `[skip ci]`).
+- **`docs/HOW_TO_USE_Pipeline_Feed.md`** and CLAUDE.md **Workflow F** document the
+  add-an-opportunity flow.
+
 ### Added — DoWEA/DoDEA Data, Analytics & AI pursuit logged as WATCH (2026-08-19)
 Logged the DoWEA/DoDEA Data, Analytics, and AI Modernization Services pursuit
 (Solicitation `HE125426RE037`) into the system-of-record workbook as a WATCH item.
