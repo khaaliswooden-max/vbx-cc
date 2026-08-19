@@ -9,11 +9,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Changed — CMS ICAT RFI 270196 pursuit updated: VBX cleared for submission (2026-08-19)
-Updated the ICAT pursuit line (`OPP-031`) in `data/pipeline_feed.jsonl` to reflect the
-`STATE AS OF 8/18 — VBX representation CLEARED for submission`. Health **AMBER →
-trending GREEN** (one hard gate open). Team structure confirmed: **Aurelus Solutions
-(prime) / CAGAIL LLC (sub) / Visionblox (sub)**.
+### Changed — CMS ICAT RFI 270196 pursuit: SUBMITTED (teamed), stage → Submitted (2026-08-19)
+Updated the ICAT pursuit line (`OPP-031`) in `data/pipeline_feed.jsonl`. The **teamed
+response (Aurelus prime / CAGAIL / VBX) was SUBMITTED 8/19**, one day ahead of the
+8/20 10:00 ET deadline.
+
+- **Stage `Capture` → `Submitted`**; health **GREEN**.
+- **Hard gate CLOSED:** the 3 COI attestations (Aurelus, CAGAIL, VBX) executed;
+  Q13 team-wide COI assertion backed; solo 5.60 fallback not needed.
+- **Next steps (owner / deadline / binary success):** archive submission receipt
+  [KW, 8/20, portal receipt filed]; monitor CMS for RFI disposition / follow-on
+  [KW, re-check 9/19, disposition logged].
+
+Earlier same-day state (now superseded by submission), retained for history: the pursuit
+was cleared for submission (health AMBER → trending GREEN, one hard gate open). Team
+structure confirmed: **Aurelus Solutions (prime) / CAGAIL LLC (sub) / Visionblox (sub)**.
 
 - **Name corrected:** "Independent Coding Audit Tool" → **"Intelligent Coding Assistance
   Tool"** (correct ICAT expansion).
