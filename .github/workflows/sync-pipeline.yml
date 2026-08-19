@@ -26,6 +26,7 @@ on:
 
 permissions:
   contents: write
+  actions: write   # sync job dispatches pages.yml after a workbook regen
 
 concurrency:
   group: sync-pipeline-${{ github.ref }}
@@ -53,9 +54,10 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install "openpyxl>=3.1.2,<4.0.0"
-      - name: Sync feed -> workbook
-        run: python scripts/sync_pipeline_from_feed.py data/pipeline_feed.jsonl VBX_Command_Center_v1.1.xlsx
+      - name: Sync feed -> workbook (freeze new ids here — the single serialization point)
+        run: python scripts/sync_pipeline_from_feed.py data/pipeline_feed.jsonl VBX_Command_Center_v1.1.xlsx --write-ids
       - name: Commit regenerated workbook (if changed)
+        id: commit
         run: |
           if [ -n "$(git status --porcelain VBX_Command_Center_v1.1.xlsx data/pipeline_feed.jsonl)" ]; then
             git config user.name  "vbx-pipeline-sync[bot]"
@@ -63,6 +65,17 @@ jobs:
             git add VBX_Command_Center_v1.1.xlsx data/pipeline_feed.jsonl
             git commit -m "chore(pipeline): sync workbook from feed [skip ci]"
             git push
+            echo "workbook_changed=true" >> "$GITHUB_OUTPUT"
           else
             echo "Workbook already in sync with feed — nothing to commit."
+            echo "workbook_changed=false" >> "$GITHUB_OUTPUT"
           fi
+      - name: Redeploy leadership dashboard
+        # The commit above is pushed with GITHUB_TOKEN, which by design does NOT
+        # trigger other workflows — so pages.yml would not fire on its own and the
+        # published dashboard would keep serving the pre-sync workbook. Dispatch it
+        # explicitly. No-op when nothing changed.
+        if: steps.commit.outputs.workbook_changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run pages.yml --ref main

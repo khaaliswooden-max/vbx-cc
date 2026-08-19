@@ -32,15 +32,17 @@ on `main`.
      `YYYY-MM-DD`. `notes` — free text (keep it on the one line; JSON escapes any
      quotes/newlines for you).
 
-2. Preview locally:
+2. Preview locally (writes nothing):
 
    ```bash
-   python scripts/sync_pipeline_from_feed.py        # feed -> workbook
+   python scripts/sync_pipeline_from_feed.py --check   # validate + preview id
    ```
 
-   It rewrites only the `Pipeline` rows, refuses to save if any formula moved, and
-   is idempotent (re-running changes nothing). It also writes the assigned OPP-ID
-   back into your feed line.
+   `--check` validates the feed and shows which OPP-ID your row *would* get, without
+   touching any file. **Do not** run the plain (non-`--check`) sync just to freeze an
+   ID on your branch: if two branches each froze the same next id, the git merge
+   keeps both as a duplicate and the main sync fails. IDs are frozen at exactly one
+   place — the CI sync on `main` — so leave `opp_id` unset and let it assign.
 
 3. Commit the **feed** (and any DOCX record). You do **not** need to commit the
    regenerated workbook from your branch — CI regenerates and commits it on `main`

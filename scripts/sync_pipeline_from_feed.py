@@ -16,9 +16,15 @@ Safety guarantees (all asserted; non-zero exit on violation):
 
 Usage:
     python scripts/sync_pipeline_from_feed.py \
-        [data/pipeline_feed.jsonl] [VBX_Command_Center_v1.1.xlsx] [--check]
+        [data/pipeline_feed.jsonl] [VBX_Command_Center_v1.1.xlsx] [--check] [--write-ids]
 
---check  validate + assign-preview only; write nothing (used by CI on PRs).
+--check      validate + assign-preview only; write nothing (used by CI on PRs).
+--write-ids  persist newly assigned OPP-IDs back into the feed. This "freezes" an
+             ID and must happen at exactly ONE serialization point — the CI sync on
+             main. Do NOT pass it locally: freezing an ID on a feature branch lets
+             two concurrent branches freeze the SAME next id, which then survives
+             the git auto-merge as a duplicate and fails validation on main. For a
+             local preview use --check (writes nothing) instead.
 """
 from __future__ import annotations
 
@@ -44,6 +50,7 @@ def _same(existing, desired, is_date: bool) -> bool:
 def main() -> int:
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     check_only = "--check" in sys.argv[1:]
+    write_ids = "--write-ids" in sys.argv[1:]
     feed_path = args[0] if len(args) > 0 else "data/pipeline_feed.jsonl"
     wb_path = args[1] if len(args) > 1 else "VBX_Command_Center_v1.1.xlsx"
 
@@ -64,11 +71,20 @@ def main() -> int:
             print("  -", p)
         return 1
     for key, new_id in assignments:
-        print(f"assigned {new_id} to key '{key}'")
+        verb = "assigned" if write_ids else "preview-assigned"
+        print(f"{verb} {new_id} to key '{key}'")
 
     if check_only:
         print(f"--check OK: {len(records)} records, {len(assignments)} new id(s) would be assigned")
         return 0
+
+    if assignments and not write_ids:
+        # Local run: populate the workbook for preview using the previewed ids,
+        # but do NOT freeze them into the feed. Freezing is main/CI-only (--write-ids)
+        # so concurrent branches never freeze the same id. Leave opp_id unset in the
+        # feed and let the authoritative sync on main assign it.
+        print("NOTE: preview only — assigned ids are NOT written back to the feed. "
+              "Leave opp_id unset and commit the feed; main's CI sync freezes ids.")
 
     wb = openpyxl.load_workbook(wb_path, data_only=False)
     ws = wb[pf.SHEET]
@@ -125,8 +141,9 @@ def main() -> int:
         return 0
 
     wb.save(wb_path)
-    if assignments:
-        pf.dump_feed(feed_path, records)  # persist frozen id assignments
+    if assignments and write_ids:
+        pf.dump_feed(feed_path, records)  # freeze id assignments (main/CI only)
+        print(f"Froze {len(assignments)} new id(s) into {feed_path}")
     print(f"Synced {len(records)} Pipeline rows ({changed} cell change(s)) -> {wb_path}")
     return 0
 

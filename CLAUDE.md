@@ -287,10 +287,12 @@ time so they never collide.
    opportunity — the sync assigns and freezes the next free `OPP-0NN`. Dates are
    ISO `YYYY-MM-DD`; `value` is an integer or `null`; `stage` is one of the
    `STAGES`. Never hand-edit the `Pipeline` sheet in the binary workbook for adds.
-2. **Sync locally to preview:** `python scripts/sync_pipeline_from_feed.py`
-   (rewrites only the `Pipeline` input rows, asserts the 254-formula set is
-   unchanged, writes assigned IDs back into the feed). It is idempotent and
-   lossless — re-syncing an in-sync feed writes nothing.
+2. **Preview locally (writes nothing):** `python scripts/sync_pipeline_from_feed.py --check`
+   validates the feed and previews the OPP-ID your row would get. IDs are frozen at
+   exactly one serialization point — the CI sync on `main` (`--write-ids`) — so do
+   NOT freeze an id on a feature branch (two branches freezing the same next id
+   survive the merge as a duplicate and fail validation on main). Leave `opp_id`
+   unset. The sync asserts the 254-formula set is unchanged and is lossless/idempotent.
 3. **Commit the feed** (and its DOCX record, if any). You do **not** need to commit
    the regenerated workbook from a feature branch — the
    `.github/workflows/sync-pipeline.yml` job regenerates and commits the workbook
