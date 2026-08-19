@@ -9,6 +9,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — DoWEA/DoDEA Data, Analytics & AI pursuit logged as WATCH (2026-08-19)
+Logged the DoWEA/DoDEA Data, Analytics, and AI Modernization Services pursuit
+(Solicitation `HE125426RE037`) into the system-of-record workbook as a WATCH item.
+SAM status re-verified on 2026-08-19 immediately before logging: `isActive=false`,
+`isCanceled=true` (latest notice `e309ee9b147547db8a7020562e4f8acc`, cancelled
+2026-08-17). No status flip.
+
+- **Pipeline — 1 new row (OPP-038):**
+  - **OPP-038 — DoWEA/DoDEA Data, Analytics & AI Modernization (HE125426RE037)** →
+    `Identified` / WATCH. Single-award FFP IDIQ, Total SB Set-Aside, NAICS 541512,
+    PSC DA01; ceiling $47M, guaranteed minimum $25K; base + 4 option years + FAR
+    52.217-8. LOE ~396 person-months/yr (33 FTE). Federal rubric SOLO score **4.75/10
+    (Moderate)**; **Pwin carried at 5%** (not band-default 25%). Gate 1 PASS on all
+    kill triggers, overridden by Step Zero (cancellation) + capacity mismatch
+    (396 PM/yr vs. 3-person Montana-committed bench) and no DoD/K-12/Ed-Fi/Fabric
+    past performance (F4). CMMC Level 1 (DFARS 252.204-7021) vs. Level 2 (PWS 3.8 /
+    CUI-marked TO1) conflict noted UNRESOLVED. Re-check 2026-09-15; monitors
+    `HE125426RE037` + `DoWEA-PSN-26-002`.
+  - Classified **WATCH, not No-Bid-final** — no formal No-Bid DOCX produced; the
+    re-solicitation decision is unmade (Akil written lane call due 2026-08-26).
+- **Deliverables (out-of-repo, delivered to owner for review):** WATCH brief
+  `Watch_DoWEA_DataAnalyticsAI_HE125426RE037_20260819.docx` and CO-inquiry email
+  draft `Email_DoWEA_CO_Inquiry_HE125426RE037_20260819.docx`. Internal Capture &
+  Compliance work product — intentionally **not** committed to the repo.
+- **Process — recurring capture item added** (`docs/capture_cadence.md`):
+  sources-sought notices under NAICS 541512/541519 now explicitly join the weekly
+  SAM/DSBS sweep. Loss point on this pursuit was the related sources-sought
+  `DoWEA-PSN-26-002` (closed 2026-07-29), not the 2026-08-25 solicitation due date.
+- No change to `As_Of_Date` (`Dashboard!C4`); workbook re-validated — formula count
+  unchanged (254), zero error cells.
+
 ### Removed — Three items cleared from Active Blockers (2026-08-13, owner-directed, 2nd request)
 Per repo owner (Khaalis Wooden), the following are **resolved and are not active
 blockers**. They were removed from the dashboard `.blockers-list` and must not be
