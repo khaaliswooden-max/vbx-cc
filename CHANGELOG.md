@@ -16,8 +16,8 @@ SAM status re-verified on 2026-08-19 immediately before logging: `isActive=false
 `isCanceled=true` (latest notice `e309ee9b147547db8a7020562e4f8acc`, cancelled
 2026-08-17). No status flip.
 
-- **Pipeline — 1 new row (OPP-038):**
-  - **OPP-038 — DoWEA/DoDEA Data, Analytics & AI Modernization (HE125426RE037)** →
+- **Pipeline — 1 new row (OPP-040):**
+  - **OPP-040 — DoWEA/DoDEA Data, Analytics & AI Modernization (HE125426RE037)** →
     `Identified` / WATCH. Single-award FFP IDIQ, Total SB Set-Aside, NAICS 541512,
     PSC DA01; ceiling $47M, guaranteed minimum $25K; base + 4 option years + FAR
     52.217-8. LOE ~396 person-months/yr (33 FTE). Federal rubric SOLO score **4.75/10
