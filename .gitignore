@@ -151,3 +151,6 @@ screenshots/
 *.screenshot.png
 *.screenshot.jpg
 dashboard_screenshot*
+
+# ---- Local pre-write workbook backups (Rule #1 — never commit real-data copies) ----
+*_bak_*.xlsx
