@@ -9,6 +9,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed — CMS ICAT RFI 270196 pursuit: SUBMITTED (teamed), stage → Submitted (2026-08-19)
+Updated the ICAT pursuit line (`OPP-031`) in `data/pipeline_feed.jsonl`. The **teamed
+response (Aurelus prime / CAGAIL / VBX) was SUBMITTED 8/19**, one day ahead of the
+8/20 10:00 ET deadline.
+
+- **Stage `Capture` → `Submitted`**; health **GREEN**.
+- **Hard gate CLOSED:** the 3 COI attestations (Aurelus, CAGAIL, VBX) executed;
+  Q13 team-wide COI assertion backed; solo 5.60 fallback not needed.
+- **Next steps (owner / deadline / binary success):** archive submission receipt
+  [KW, 8/20, portal receipt filed]; monitor CMS for RFI disposition / follow-on
+  [KW, re-check 9/19, disposition logged].
+
+Earlier same-day state (now superseded by submission), retained for history: the pursuit
+was cleared for submission (health AMBER → trending GREEN, one hard gate open). Team
+structure confirmed: **Aurelus Solutions (prime) / CAGAIL LLC (sub) / Visionblox (sub)**.
+
+- **Name corrected:** "Independent Coding Audit Tool" → **"Intelligent Coding Assistance
+  Tool"** (correct ICAT expansion).
+- **Prime resolved:** the 8/13 "Shan" placeholder resolved to **Aurelus Solutions**
+  (screened/cleared by KW 8/15) — NOT Cadence / Shaneiqua Johnson; FILED contingency
+  **closed**.
+- **State captured:** NDA executed 8/16; response redlined 8/17 (6 tracked VBX edits);
+  VBX representation cleared 8/18 with **zero residual false VBX claims** (GSA MAS/SIN
+  54151HEAL struck, "HITRUST-audited" → "assessor-on-staff", CMS/FEMA mis-attribution
+  fixed).
+- **Open hard gate:** 3 signed COI attestations (Aurelus, CAGAIL, VBX), target Tue 8/19
+  EOD; solo fallback preserved (5.60, Credible).
+- **Corrections to prior CC entry:** deadline **Thu 8/20** 10:00 ET (not Wed);
+  per-question limit **3,000 chars** (not 2,000); FSIPAP 8/19 → ICAT 8/20 **sequential**,
+  not stacked.
+- **Branded record produced** (`ICAT_Pursuit_Status_270196_20260819.docx` + `.pdf`) via
+  the VBX docx pipeline (docx-js → validate.py → border patch → repack → re-validate →
+  PDF → preview). Delivered to the owner **out-of-repo** — it carries teaming-partner and
+  executed-NDA detail prohibited from the repo by Hard Rule #1; only the Pipeline-feed
+  note (permitted under the 2026-08-19 feed exception) is committed.
+
 ### Added — Text-mergeable Pipeline feed + deterministic sync (2026-08-19)
 Introduced `data/pipeline_feed.jsonl` as the source of record for the `Pipeline`
 sheet, to end binary-workbook merge conflicts and OPP-ID collisions when multiple
