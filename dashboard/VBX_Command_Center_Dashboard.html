@@ -814,6 +814,104 @@ html, body {
 }
 .drill-table td.right { text-align: right; }
 .drill-table tr:hover td { background: var(--surface-2); }
+/* ── Opportunity brief — BD posture + technical scope ── */
+.drill-table tr.drillable { cursor: pointer; }
+.posture-pill {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: #E5E7EB;
+  color: var(--text-2);
+  white-space: nowrap;
+}
+.posture-prime         { background: var(--green-bg); color: var(--green); }
+.posture-sub           { background: #DBEAFE; color: #1E40AF; }
+.posture-prime-or-sub  { background: #DBEAFE; color: #1E40AF; }
+.posture-undecided     { background: var(--amber-bg); color: #8B6914; }
+.posture-not-pursuing  { background: #E5E7EB; color: var(--text-2); }
+.due-pill {
+  font-size: 10.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.due-ok   { color: var(--text-2); }
+.due-soon { color: var(--amber); }
+.due-past { color: var(--text-3); }
+
+.opp-brief { font-size: 13px; }
+.brief-warn {
+  background: var(--amber-bg);
+  border-left: 3px solid var(--amber);
+  padding: 10px 12px;
+  margin-bottom: 16px;
+  font-size: 12px;
+  color: var(--text-2);
+}
+.brief-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 28px;
+  padding: 14px 16px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 20px;
+}
+.brief-fact { display: flex; flex-direction: column; gap: 3px; }
+.brief-fact span {
+  font-size: 9.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.brief-fact strong { font-size: 13px; font-weight: 700; color: var(--text); }
+.brief-cols {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+}
+.brief-col h4,
+.brief-notes h4 {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--navy);
+  padding-bottom: 7px;
+  margin-bottom: 14px;
+  border-bottom: 2px solid var(--navy);
+}
+.brief-field { margin-bottom: 14px; }
+.brief-label {
+  font-size: 9.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 3px;
+}
+.brief-value { color: var(--text); line-height: 1.5; }
+.brief-empty { color: var(--text-3); font-style: italic; }
+.brief-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 4px; }
+.chip {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 99px;
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  font-size: 11px;
+  color: var(--text-2);
+}
+.brief-notes { margin-top: 24px; }
+.brief-notes p {
+  color: var(--text-2);
+  line-height: 1.6;
+  font-size: 12px;
+  white-space: pre-wrap;
+}
 .classification-pill {
   display: inline-block;
   padding: 2px 7px;
@@ -918,6 +1016,12 @@ html, body {
 .slider-label,
 .result-label,
 .stage-pill,
+.posture-pill,
+.due-pill,
+.brief-col h4,
+.brief-notes h4,
+.brief-label,
+.brief-fact span,
 .opp-meta,
 .modal-subtitle {
   font-family: var(--font-mono) !important;
@@ -1229,6 +1333,7 @@ const DEFAULTS = {
   expenses: [],
   meetings: [],
   pipeline: [],
+  oppDetail: {},
   screenings: [],
   ndas: [],
   agreements: [],
@@ -1509,6 +1614,22 @@ function parseWorkbook(workbook) {
     identified: r.identified ? excelDateToJS(r.identified) : null,
     stageDate: r.stageDate ? excelDateToJS(r.stageDate) : null,
   })).filter(r => r.id);
+
+  // ----- Opportunity_Detail: BD posture + technical scope, keyed to Pipeline by Opp ID -----
+  // A=OppID, B=Name, C=BDPosture, D=TeamingStatus, E=ResponseDue, F=NextMilestone,
+  // G=MilestoneOwner, H=WinTheme, I=ScopeSummary, J=Capabilities, K=LaborCategories,
+  // L=ComplianceGates, M=PlaceOfPerformance, N=PeriodOfPerformance, O=StaffingGap
+  // Absent in older workbooks — readSheet returns [] and every panel degrades to
+  // "not yet recorded", so the dashboard stays compatible with a pre-detail workbook.
+  const detailRaw = readSheet('Opportunity_Detail', 4, {
+    id: 0, name: 1, bdPosture: 2, teamingStatus: 3, responseDue: 4, nextMilestone: 5,
+    milestoneOwner: 6, winTheme: 7, scopeSummary: 8, capabilities: 9, laborCategories: 10,
+    complianceGates: 11, placeOfPerformance: 12, periodOfPerformance: 13, staffingGap: 14
+  });
+  data.oppDetail = {};
+  detailRaw.forEach(r => {
+    data.oppDetail[r.id] = { ...r, responseDue: r.responseDue ? excelDateToJS(r.responseDue) : null };
+  });
 
   // ----- Active_Projects: A=ID, B=Name, C=Client, D=Type, E=Value, F=Start, G=End, H=Status, I=%, J=PM -----
   const projRaw = readSheet('Active_Projects', 4, {
@@ -1986,10 +2107,19 @@ function openDrill(drill) {
       body = renderRevenueTable(d.revenue);
       break;
     case 'pipeline':
+      // A row click carries oppId -> open that one opportunity's brief; the KPI
+      // cards carry no oppId and open the full table.
+      const one = drill.oppId ? d.pipeline.find(p => p.id === drill.oppId) : null;
+      if (one) {
+        title = one.name || one.id;
+        subtitle = `${one.id} · ${one.client || '—'} · ${one.stage}`;
+        body = renderOpportunityBrief(one);
+        break;
+      }
       title = 'Pipeline — Active Opportunities';
       const active = d.pipeline.filter(p => p.stage !== 'Awarded' && p.stage !== 'Lost' && p.stage !== 'No-Bid');
       const total = active.reduce((s,p) => s + (p.value||0), 0);
-      subtitle = `${active.length} active opps · TCV ${fmtCurrencyShort(total)}`;
+      subtitle = `${active.length} active opps · TCV ${fmtCurrencyShort(total)} · click a row for BD posture + technical detail`;
       body = renderPipelineTable(active);
       break;
     case 'projects':
@@ -2039,7 +2169,12 @@ function openDrill(drill) {
 
   document.getElementById('modal-title').textContent = title;
   document.getElementById('modal-subtitle').textContent = subtitle;
-  document.getElementById('modal-body').innerHTML = body;
+  const modalBody = document.getElementById('modal-body');
+  modalBody.innerHTML = body;
+  modalBody.scrollTop = 0;
+  // Rows rendered inside the modal can themselves be drillable (a pipeline row
+  // opens that opportunity's brief), so wire the new DOM up too.
+  attachDrillHandlers(modalBody);
   document.getElementById('modal').classList.add('open');
 }
 
@@ -2068,21 +2203,128 @@ function renderRevenueTable(rows) {
 }
 
 function renderPipelineTable(rows) {
+  const d = STATE.data;
   return `<table class="drill-table">
     <thead><tr>
       <th>Opp ID</th><th>Name</th><th>Client</th><th>NAICS</th>
-      <th>Stage</th><th class="right">Value</th><th>Identified</th>
+      <th>Stage</th><th>Posture</th><th class="right">Value</th>
+      <th>Identified</th><th>Response Due</th>
     </tr></thead><tbody>
-    ${rows.map(r => `<tr>
-      <td>${r.id || ''}</td>
-      <td>${r.name || ''}</td>
-      <td>${r.client || ''}</td>
-      <td>${r.naics || ''}</td>
+    ${rows.map(r => {
+      const det = d.oppDetail[r.id] || {};
+      return `<tr class="drillable" data-drill='${JSON.stringify({type: 'pipeline', oppId: r.id})}'>
+      <td>${esc(r.id)}</td>
+      <td>${esc(r.name)}</td>
+      <td>${esc(r.client)}</td>
+      <td>${esc(r.naics)}</td>
       <td><span class="stage-pill stage-${r.stage}">${r.stage}</span></td>
+      <td>${det.bdPosture ? `<span class="posture-pill posture-${slug(det.bdPosture)}">${esc(det.bdPosture)}</span>` : '<span class="brief-empty">—</span>'}</td>
       <td class="right">${fmtCurrencyShort(r.value)}</td>
       <td>${r.identified ? fmtDate(r.identified) : '—'}</td>
-    </tr>`).join('')}
+      <td>${renderDue(det.responseDue)}</td>
+    </tr>`;
+    }).join('')}
     </tbody></table>`;
+}
+
+// ----- Opportunity brief: BD posture + technical scope for ONE opportunity -----
+// Reads Opportunity_Detail (workbook), never originates it — the workbook stays
+// the system of record. Fields with nothing recorded say so rather than hiding,
+// so a gap in the record is visible to whoever needs to fill it.
+function esc(v) {
+  if (v === null || v === undefined) return '';
+  return String(v).replace(/[&<>"']/g, ch => (
+    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]
+  ));
+}
+
+function slug(v) {
+  return String(v || '').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+}
+
+// Response due, coloured by how far out it is from the as-of date.
+function renderDue(due) {
+  if (!due || isNaN(due.getTime())) return '<span class="brief-empty">—</span>';
+  const days = Math.round((due - STATE.asOfDate) / 86400000);
+  const cls = days < 0 ? 'past' : days <= 14 ? 'soon' : 'ok';
+  const rel = days < 0 ? `${Math.abs(days)}d ago` : days === 0 ? 'today' : `${days}d`;
+  return `<span class="due-pill due-${cls}">${fmtDate(due)} · ${rel}</span>`;
+}
+
+function briefField(label, value) {
+  const has = value !== null && value !== undefined && String(value).trim() !== '';
+  return `<div class="brief-field">
+    <div class="brief-label">${esc(label)}</div>
+    <div class="brief-value${has ? '' : ' brief-empty'}">${has ? esc(value) : 'Not yet recorded'}</div>
+  </div>`;
+}
+
+function briefChips(label, value) {
+  const items = String(value || '').split(';').map(x => x.trim()).filter(Boolean);
+  if (items.length === 0) return briefField(label, null);
+  return `<div class="brief-field">
+    <div class="brief-label">${esc(label)}</div>
+    <div class="brief-chips">${items.map(i => `<span class="chip">${esc(i)}</span>`).join('')}</div>
+  </div>`;
+}
+
+function renderOpportunityBrief(opp) {
+  const det = STATE.data.oppDetail[opp.id] || {};
+  const posture = det.bdPosture
+    ? `<span class="posture-pill posture-${slug(det.bdPosture)}">${esc(det.bdPosture)}</span>`
+    : '<span class="brief-empty">Not set</span>';
+  const facts = [
+    ['Stage', `<span class="stage-pill stage-${opp.stage}">${opp.stage}</span>`],
+    ['BD Posture', posture],
+    ['Est. Value', fmtCurrencyShort(opp.value)],
+    ['NAICS', esc(opp.naics) || '—'],
+    ['Capture Owner', esc(opp.owner) || '—'],
+    ['Identified', opp.identified ? fmtDate(opp.identified) : '—'],
+    ['Response Due', renderDue(det.responseDue)],
+  ];
+
+  const bd = [
+    briefField('Teaming Status', det.teamingStatus),
+    briefField('Win Theme', det.winTheme),
+    briefField('Next Milestone', det.nextMilestone),
+    briefField('Milestone Owner', det.milestoneOwner),
+  ].join('');
+
+  const tech = [
+    briefField('Scope Summary', det.scopeSummary),
+    briefChips('Capabilities Required', det.capabilities),
+    briefChips('Labor Categories', det.laborCategories),
+    briefChips('Compliance Gates', det.complianceGates),
+    briefField('Place of Performance', det.placeOfPerformance),
+    briefField('Period of Performance', det.periodOfPerformance),
+    briefField('Staffing Gap', det.staffingGap),
+  ].join('');
+
+  const noDetail = Object.keys(det).length === 0
+    ? `<div class="brief-warn">No Opportunity_Detail row for ${esc(opp.id)}. Add the BD posture and
+       technical fields to this record in <code>data/pipeline_feed.jsonl</code>.</div>`
+    : '';
+
+  return `<div class="opp-brief">
+    ${noDetail}
+    <div class="brief-facts">
+      ${facts.map(([k, v]) => `<div class="brief-fact"><span>${k}</span><strong>${v}</strong></div>`).join('')}
+    </div>
+    <div class="brief-cols">
+      <section class="brief-col">
+        <h4>BD Posture</h4>
+        ${bd}
+      </section>
+      <section class="brief-col">
+        <h4>Technical Scope</h4>
+        ${tech}
+      </section>
+    </div>
+    ${opp.notes ? `<section class="brief-notes">
+      <h4>Capture Notes</h4>
+      <p>${esc(opp.notes)}</p>
+    </section>` : ''}
+  </div>`;
 }
 
 function renderProjectsTable(rows) {

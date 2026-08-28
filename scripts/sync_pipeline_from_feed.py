@@ -6,8 +6,17 @@ Reads data/pipeline_feed.jsonl and writes its rows into the Pipeline INPUT sheet
 of the committed workbook, in feed order. Assigns OPP-IDs deterministically to any
 record lacking one and writes the assignments back into the feed.
 
+The same records also carry optional BD-posture and technical-scope fields, which
+are written to a SECOND sheet, Opportunity_Detail (created on first sync, styled
+to the same convention), one row per Pipeline row in the same order. They go to
+their own sheet rather than extra Pipeline columns so the Pipeline sheet keeps its
+10-column contract with the HTML parser (CLAUDE.md Hard Rule #3). The detail sheet
+holds no formulas and nothing references it, so it is safe to add — and safe for
+the Pages build to strip before publishing (see scripts/build_leadership_feed.py).
+
 Safety guarantees (all asserted; non-zero exit on violation):
-  * Only the Pipeline sheet's data cells change. No other sheet is touched.
+  * Only the Pipeline and Opportunity_Detail data cells change. No other sheet is
+    touched.
   * The workbook's formula set is byte-identical before/after — no formula moves
     (upholds the CLAUDE.md workbook->HTML invariant).
   * Value-diff writer: cells are set only when their value actually changes, so
@@ -33,12 +42,107 @@ from copy import copy
 from pathlib import Path
 
 import openpyxl
+from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
+from openpyxl.utils import get_column_letter
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import pipeline_feed as pf  # noqa: E402
 
 DATE_FMT = "mm/dd/yyyy"
 VALUE_FMT = r'\$#,##0;"($"#,##0\);\-'
+
+# Brand tokens (CLAUDE.md §4) — Arial is the workbook font, by rule.
+NAVY = "FF232D5A"
+BANNER_BG = "FFFFFBEC"
+INPUT_BLUE = "FF0000FF"  # financial-model convention: blue = operator input
+
+DETAIL_WIDTHS = {
+    "A": 14, "B": 36, "C": 14, "D": 22, "E": 14, "F": 34, "G": 18, "H": 34,
+    "I": 46, "J": 34, "K": 30, "L": 26, "M": 26, "N": 22, "O": 30,
+}
+
+
+def ensure_detail_sheet(wb):
+    """Return the Opportunity_Detail worksheet, creating + styling it if absent.
+
+    Styled to the same convention as every other input sheet: navy title row 1,
+    banner row 2, spacer row 3, headers row 4, data from row 5 (CLAUDE.md §3).
+    """
+    if pf.DETAIL_SHEET in wb.sheetnames:
+        return wb[pf.DETAIL_SHEET], False
+
+    idx = wb.sheetnames.index(pf.SHEET) + 1 if pf.SHEET in wb.sheetnames else None
+    ws = wb.create_sheet(pf.DETAIL_SHEET, idx)
+    ws.sheet_view.showGridLines = False
+    ws.sheet_properties.tabColor = "FFB0BEC5"
+    last_letter = get_column_letter(pf.DETAIL_LAST_COL)
+
+    # Row 1 — brand title
+    ws.merge_cells(f"A1:{last_letter}1")
+    t = ws.cell(1, 1, pf.DETAIL_TITLE)
+    t.fill = PatternFill("solid", fgColor=NAVY)
+    t.font = Font(name="Arial", size=14, bold=True, color="FFFFFFFF")
+    t.alignment = Alignment(vertical="center")
+    ws.row_dimensions[1].height = 27.75
+
+    # Row 2 — section banner
+    ws.merge_cells(f"A2:{last_letter}2")
+    b = ws.cell(2, 1, pf.DETAIL_BANNER)
+    b.fill = PatternFill("solid", fgColor=BANNER_BG)
+    b.font = Font(name="Arial", size=10, italic=True, color=NAVY)
+    b.alignment = Alignment(vertical="center")
+    ws.row_dimensions[2].height = 21.75
+
+    # Row 4 — column headers
+    thin = Side(style="thin", color="FFC8CDD7")
+    for c, header in enumerate(pf.DETAIL_HEADERS, 1):
+        cell = ws.cell(pf.HEADER_ROW, c, header)
+        cell.fill = PatternFill("solid", fgColor=NAVY)
+        cell.font = Font(name="Arial", size=11, bold=True, color="FFFFFFFF")
+        cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+        cell.border = Border(bottom=thin)
+    ws.row_dimensions[pf.HEADER_ROW].height = 30.0
+
+    for letter, width in DETAIL_WIDTHS.items():
+        ws.column_dimensions[letter].width = width
+    ws.freeze_panes = f"A{pf.FIRST_DATA_ROW}"
+    return ws, True
+
+
+def sync_detail(ws, records) -> int:
+    """Write BD-posture / technical detail rows. Returns the cell-change count.
+
+    Value-diff writer, same as the Pipeline sync: a cell is set only when its
+    value actually changes, so a re-sync of unchanged records writes nothing.
+    """
+    cur_last = pf.HEADER_ROW
+    for r in range(pf.FIRST_DATA_ROW, ws.max_row + 1):
+        if any(ws.cell(r, c).value not in (None, "") for c in range(1, pf.DETAIL_LAST_COL + 1)):
+            cur_last = r
+
+    changed = 0
+    for i, rec in enumerate(records):
+        row = pf.FIRST_DATA_ROW + i
+        for c, field in enumerate(pf.DETAIL_COLUMNS, 1):
+            is_date = field in pf.DETAIL_DATE_FIELDS
+            desired = pf.detail_cell(rec, field)
+            cell = ws.cell(row, c)
+            if row > cur_last:
+                cell.font = Font(name="Arial", size=10, color=INPUT_BLUE)
+                cell.alignment = Alignment(vertical="top", wrap_text=True)
+                if is_date:
+                    cell.number_format = DATE_FMT
+            if not _same(cell.value, desired, is_date):
+                cell.value = desired
+                changed += 1
+
+    # clear leftover rows below the feed (feed shrank)
+    for row in range(pf.FIRST_DATA_ROW + len(records), cur_last + 1):
+        for c in range(1, pf.DETAIL_LAST_COL + 1):
+            if ws.cell(row, c).value not in (None, ""):
+                ws.cell(row, c).value = None
+                changed += 1
+    return changed
 
 
 def _same(existing, desired, is_date: bool) -> bool:
@@ -75,7 +179,9 @@ def main() -> int:
         print(f"{verb} {new_id} to key '{key}'")
 
     if check_only:
-        print(f"--check OK: {len(records)} records, {len(assignments)} new id(s) would be assigned")
+        detailed = sum(1 for r in records if pf.has_detail(r))
+        print(f"--check OK: {len(records)} records, {len(assignments)} new id(s) would be assigned, "
+              f"{detailed} with BD/technical detail")
         return 0
 
     if assignments and not write_ids:
@@ -130,6 +236,13 @@ def main() -> int:
                 ws.cell(row, c).value = None
                 changed += 1
 
+    # --- Opportunity_Detail: BD posture + technical scope --------------------
+    detail_ws, detail_created = ensure_detail_sheet(wb)
+    detail_changed = sync_detail(detail_ws, records)
+    changed += detail_changed
+    if detail_created:
+        print(f"Created '{pf.DETAIL_SHEET}' sheet (BD posture + technical detail).")
+
     after_formulas = pf.formula_set(wb)
     if before_formulas != after_formulas:
         diff = before_formulas ^ after_formulas
@@ -143,16 +256,20 @@ def main() -> int:
     # an accidental workbook commit). Freezing ids to the feed is separate and
     # main/CI-only (--write-ids).
     feed_will_change = bool(assignments) and write_ids
-    if changed == 0 and not feed_will_change:
+    wb_will_change = changed > 0 or detail_created
+    if not wb_will_change and not feed_will_change:
         print(f"Pipeline already in sync with feed ({len(records)} rows). No write.")
         return 0
 
-    if changed > 0:
+    if wb_will_change:
         wb.save(wb_path)
     if feed_will_change:
         pf.dump_feed(feed_path, records)  # freeze id assignments (main/CI only)
         print(f"Froze {len(assignments)} new id(s) into {feed_path}")
+    detailed = sum(1 for r in records if pf.has_detail(r))
     print(f"Synced {len(records)} Pipeline rows ({changed} cell change(s)) -> {wb_path}")
+    print(f"  {pf.DETAIL_SHEET}: {detailed}/{len(records)} record(s) carry BD/technical detail "
+          f"({detail_changed} cell change(s))")
     return 0
 
 

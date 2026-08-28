@@ -9,6 +9,53 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — BD posture & technical detail per opportunity (2026-08-28)
+Requested by the technical team: operations and delivery could see an opportunity's
+name, stage, and dollar value, but nothing about how they would be expected to
+support it. The information mostly existed already — buried in the free-text `notes`
+blob (averaging ~830 characters per record), which the dashboard never rendered.
+This structures it and surfaces it.
+
+- **New sheet `Opportunity_Detail`** (15 columns, header row 4), one row per
+  `Pipeline` row in the same order, joined on Opp ID. Created automatically by
+  `scripts/sync_pipeline_from_feed.py` on the next sync. Deliberately a second
+  sheet rather than extra `Pipeline` columns, so the `Pipeline` sheet keeps its
+  10-column contract with the workbook and the HTML parser (Hard Rule #3). It
+  holds no formulas and nothing references it.
+- **13 new optional feed fields** on each `data/pipeline_feed.jsonl` record —
+  BD: `bd_posture`, `teaming_status`, `response_due`, `next_milestone`,
+  `milestone_owner`, `win_theme`; technical: `scope_summary`,
+  `capabilities_required`, `labor_categories`, `compliance_gates`,
+  `place_of_performance`, `period_of_performance`, `staffing_gap`.
+  `bd_posture` and `teaming_status` are validated against fixed vocabularies; the
+  three list fields take a JSON array (or a `"; "`-joined string).
+- **`response_due` fills a real gap** — the schema had no due date at all.
+  `stage_date` records when a row last *moved*, not when a response is *due*.
+- **Dashboard: per-opportunity brief.** Clicking any pipeline row — on the main
+  Active Pipeline table or in the drill-down — opens a facts strip over two
+  columns, **BD Posture** and **Technical Scope**, with the capture notes below.
+  The drill-down table gains Posture and Response Due columns, the latter coloured
+  by proximity to the as-of date. Fields with nothing recorded say "Not yet
+  recorded" rather than hiding, so gaps stay visible.
+- **Backfilled all 25 existing records** from their own notes. Values are
+  traceable to statements already in each record; where the notes did not support
+  a field it was left blank rather than inferred. **Owner/BD review is expected**
+  on the judgment fields (`bd_posture`, `win_theme`, `teaming_status`).
+- **Not published.** GitHub Pages is public and search-indexable, and this sheet
+  is delivery-planning material. New `scripts/build_leadership_feed.py` strips it
+  from the copy `.github/workflows/pages.yml` serves; the workflow then fails the
+  deploy if it survives. The published dashboard degrades cleanly — every detail
+  panel reads "Not yet recorded". The committed workbook is unchanged by the strip.
+- **`scripts/export_pipeline_to_feed.py`** now reads `Opportunity_Detail` too, so
+  the rescue rebuild no longer silently drops the detail fields, and it preserves
+  author-chosen `key` values instead of overwriting them with the OPP-ID.
+- **`scripts/verify_parse.js`** gained a join check: every `Pipeline` row has a
+  matching detail row, no orphans, no duplicates, same order. Skips cleanly when
+  the sheet is absent.
+- Validation rejects a semicolon inside a list item, which would otherwise split
+  the item in half when the sheet is read back (caught by a round-trip test;
+  workbook → feed → workbook is now verified lossless).
+
 ### Changed — CMS ICAT RFI 270196 pursuit: SUBMITTED (teamed), stage → Submitted (2026-08-19)
 Updated the ICAT pursuit line (`OPP-031`) in `data/pipeline_feed.jsonl`. The **teamed
 response (Aurelus prime / CAGAIL / VBX) was SUBMITTED 8/19**, one day ahead of the
