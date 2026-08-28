@@ -54,7 +54,7 @@ import shutil
 import sys
 import zipfile
 from pathlib import Path
-from xml.sax.saxutils import escape
+from xml.sax.saxutils import escape, unescape
 
 import openpyxl
 from openpyxl.utils import get_column_letter
@@ -118,12 +118,20 @@ CONTENT_TYPES = "[Content_Types].xml"
 SHARED_STRINGS = "xl/sharedStrings.xml"
 APP_PROPS = "docProps/app.xml"
 CALC_CHAIN = "xl/calcChain.xml"
-LEAK_MIN_LEN = 12
+# The leak scan reads text CONTENT rather than raw package bytes, so short
+# values no longer risk matching markup and the floor can sit low enough to
+# cover person and company names ("Susan Rouse" is 11 characters). Values below
+# SHORT_VALUE_LEN are matched on word boundaries to avoid catching a fragment
+# of a longer published word.
+LEAK_MIN_LEN = 3
+SHORT_VALUE_LEN = 8
 
 SHARED_CELL = re.compile(r'<c\b[^>]*\bt="s"[^>]*?>(.*?)</c>', re.S)
 SI_ENTRY = re.compile(r"<si\b[^>]*/>|<si\b.*?</si>", re.S)
 V_INT = re.compile(r"<v>(\d+)</v>")
 ANY_CELL = re.compile(r'<c\b([^>]*?)/>|<c\b([^>]*?)>(.*?)</c>', re.S)
+HYPERLINK = re.compile(r'<hyperlink\b[^>]*/>|<hyperlink\b[^>]*>.*?</hyperlink>', re.S)
+TEXT_NODE = re.compile(r"<t\b[^>]*>(.*?)</t>", re.S)
 REF_ATTR = re.compile(r'r="([A-Z]+)(\d+)"')
 STYLE_ATTR = re.compile(r'(\ss="\d+")')
 
@@ -180,7 +188,24 @@ def redact_cells(xml: str, columns: set[str], first_row: int) -> tuple[str, int]
         count += 1
         return f'<c r="{ref.group(1)}{ref.group(2)}"{style.group(1) if style else ""}/>'
 
-    return ANY_CELL.sub(repl, xml), count
+    xml = ANY_CELL.sub(repl, xml)
+
+    # Excel turns a typed email address into a <hyperlink> whose target lives
+    # outside the <c> element, so blanking the cell alone would leave a mailto
+    # (and often a display name) behind. Drop hyperlinks anchored in a withheld
+    # column. Anything this misses is caught by the leak scan, which reads
+    # hyperlink text as content.
+    def drop_link(m: re.Match) -> str:
+        ref = re.search(r'ref="([A-Z]+)(\d+)"', m.group(0))
+        if ref and ref.group(1) in columns and int(ref.group(2)) >= first_row:
+            return ""
+        return m.group(0)
+
+    xml = HYPERLINK.sub(drop_link, xml)
+    # CT_Hyperlinks requires at least one child, so an emptied container would
+    # make Excel offer to repair the file. Drop it.
+    xml = re.sub(r"<hyperlinks>\s*</hyperlinks>", "", xml)
+    return xml, count
 
 
 def blank_orphan_strings(sheet_parts: dict[str, bytes], sst_xml: str) -> tuple[str, int]:
@@ -357,20 +382,57 @@ def withheld_values(src: Path, redact: dict[str, tuple[int, ...]]) -> tuple[set[
     return withheld, retained
 
 
+def published_text(dst: Path) -> str:
+    """Every piece of human-readable TEXT the published package can surface.
+
+    Deliberately not the raw zip bytes: styles and theme parts are markup noise
+    that forces the length floor up, and the floor is what let short names slip
+    past. This gathers the surfaces text can actually reach a reader through —
+    shared strings (including entries no cell references), inline cell strings,
+    cell comments, hyperlink targets and their display/tooltip text, and the
+    document properties.
+    """
+    chunks: list[str] = []
+    with zipfile.ZipFile(dst) as z:
+        for name in z.namelist():
+            if not (name.endswith(".xml") or name.endswith(".rels")):
+                continue
+            if name.startswith(("xl/theme/", "xl/styles")):
+                continue
+            xml = z.read(name).decode("utf-8", "ignore")
+            chunks.extend(TEXT_NODE.findall(xml))
+            if name.endswith(".rels"):
+                chunks.extend(re.findall(r'Target="([^"]+)"', xml))
+            for attr in ("display", "tooltip"):
+                chunks.extend(re.findall(rf'{attr}="([^"]*)"', xml))
+            if name.startswith("docProps/"):
+                chunks.extend(re.findall(r">([^<]+)<", xml))
+    return "\n".join(unescape(c) for c in chunks)
+
+
 def leak_scan(dst: Path, withheld: set[str], retained: set[str]) -> list[str]:
-    """Withheld values that still appear in the published package."""
+    """Withheld values that still surface as text in the published package."""
     candidates = {v for v in withheld - retained
                   if len(v) >= LEAK_MIN_LEN and not any(v in r for r in retained)}
     if not candidates:
         return []
-    with zipfile.ZipFile(dst) as z:
-        blob = b"".join(z.read(n) for n in z.namelist())
-    return sorted(v for v in candidates
-                  if v.encode("utf-8") in blob or escape(v).encode("utf-8") in blob)
+    text = published_text(dst)
+    found = []
+    for v in sorted(candidates):
+        if len(v) < SHORT_VALUE_LEN:
+            if re.search(rf"(?<!\w){re.escape(v)}(?!\w)", text):
+                found.append(v)
+        elif v in text:
+            found.append(v)
+    return found
 
 
 def forbidden_scan(dst: Path) -> list[str]:
-    """Hard Rule #8 terms present anywhere in the published package."""
+    """Hard Rule #8 terms present anywhere in the published package.
+
+    Stays on the RAW bytes, unlike the leak scan: these terms must not appear
+    anywhere at all, including in parts the leak scan deliberately skips.
+    """
     with zipfile.ZipFile(dst) as z:
         blob = b"".join(z.read(n) for n in z.namelist()).decode("utf-8", "ignore")
     return [t for t in FORBIDDEN_TERMS if t in blob]

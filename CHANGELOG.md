@@ -77,8 +77,30 @@ PRIORITY/BENCH/WATCHLIST/FILED assessment of each partner — all public.
   published copy. Withheld identity columns render as an em dash so an
   anonymised table reads as deliberate rather than broken.
 
-Exposure on a 13-term probe (partner names, personal names, NDA filenames,
-suppressed terms) went from **13/13 public to 1/13**.
+Exposure on a 16-term probe (partner names, personal names, NDA filenames,
+suppressed terms) went from **16/16 public to 1/16**.
+
+Two review findings on the redaction mechanism, both fixed:
+
+- **The leak scan had a blind spot exactly where this change adds risk.** Its
+  12-character floor existed to stop short strings matching markup in the raw
+  package bytes, but the newly withheld set is full of short names — 54 values
+  under 12 characters, including `AgileCare`, `Anna Olvera`, `Bryan Read` and
+  `CAGAIL LLC`. The scan now reads text **content** (shared strings including
+  unreferenced entries, inline cell strings, comments, hyperlink targets and
+  their display/tooltip text, document properties) rather than raw bytes, so the
+  floor drops to 3 with word-boundary matching under 8 characters. Coverage goes
+  from 305 to 355 of 359 withheld-unique values. Verified by muting the Rule #8
+  gate and disabling orphan blanking: the scan reports 355 and refuses to write.
+- **Blanking a `<c>` element does not remove a hyperlink anchored to it.** Excel
+  turns a typed email address into a `<hyperlink>` carrying a `mailto` target and
+  often a display name, stored outside the cell — so a withheld contact could
+  ship as a link. Hyperlinks anchored in a withheld column are now dropped, the
+  container removed if it empties (`CT_Hyperlinks` requires a child, so an empty
+  one makes Excel offer to repair the file), and links on published cells are
+  left alone. No instances exist in the workbook today; this closes the
+  mechanism before one appears. Anything the removal misses the leak scan now
+  catches, since it reads hyperlink text as content.
 
 ⚠️ **Still public, not changed here:** GSA SIN 54151HEAL on `Dashboard!B33`
 ("Refresh 31 remediation (7 deficiencies open)"). The `Meetings!E57` instance is
