@@ -154,6 +154,39 @@ def blank_orphan_strings(sheet_parts: dict[str, bytes], sst_xml: str) -> tuple[s
     return head + "".join(rebuilt) + tail, blanked
 
 
+def fix_app_props(xml: str, removed: list[str], remaining_sheets: int) -> str:
+    """Drop stripped sheet names from docProps/app.xml and re-derive its counts.
+
+    app.xml caches a list of part titles (worksheets, then named ranges) plus
+    HeadingPairs counts for each category. Removing a title without updating the
+    vector size and the matching count leaves a document that declares more parts
+    than it lists — which Excel's file properties and some repair paths trust.
+
+    Counts are RE-DERIVED from what actually remains rather than decremented, so
+    the result is self-consistent no matter what was removed.
+    """
+    for sheet in removed:
+        xml = xml.replace(f"<vt:lpstr>{sheet}</vt:lpstr>", "")
+
+    m = re.search(r"(<TitlesOfParts>\s*<vt:vector)([^>]*)(>)(.*?)(</vt:vector>\s*</TitlesOfParts>)", xml, re.S)
+    if not m:
+        return xml
+    body = m.group(4)
+    total = len(re.findall(r"<vt:lpstr>", body))
+    attrs = re.sub(r'size="\d+"', f'size="{total}"', m.group(2))
+    xml = xml[: m.start()] + m.group(1) + attrs + m.group(3) + body + m.group(5) + xml[m.end():]
+
+    def set_count(text: str, label: str, count: int) -> str:
+        return re.sub(
+            rf"(<vt:lpstr>{re.escape(label)}</vt:lpstr>\s*</vt:variant>\s*<vt:variant>\s*<vt:i4>)\d+(</vt:i4>)",
+            rf"\g<1>{count}\g<2>", text, flags=re.S,
+        )
+
+    xml = set_count(xml, "Worksheets", remaining_sheets)
+    xml = set_count(xml, "Named Ranges", max(total - remaining_sheets, 0))
+    return xml
+
+
 def strip_sheets(src: Path, dst: Path, sheet_names) -> list[str]:
     """Remove sheets from the package, copying all other parts verbatim.
 
@@ -243,9 +276,7 @@ def strip_sheets(src: Path, dst: Path, sheet_names) -> list[str]:
         if APP_PROPS in names:
             raw = zin.read(APP_PROPS).decode("utf-8")
             if any(sheet in raw for sheet in removed):
-                app_xml = raw
-                for sheet in removed:
-                    app_xml = app_xml.replace(f"<vt:lpstr>{sheet}</vt:lpstr>", "")
+                app_xml = fix_app_props(raw, removed, len(re.findall(r"<sheet\b", wb_xml)))
 
         dst.parent.mkdir(parents=True, exist_ok=True)
         with zipfile.ZipFile(dst, "w", zipfile.ZIP_DEFLATED) as zout:

@@ -63,7 +63,9 @@ This structures it and surfaces it.
   content-level leak scan — every value unique to the stripped sheet, checked
   against the bytes about to be published — and refuses to write output if any
   survives. Verified on a shared-string fixture: 109 values leaked before the
-  fix, 0 after.
+  fix, 0 after. The cached `docProps/app.xml` part list has its counts
+  re-derived from what remains (rather than decremented), so the published file
+  never declares more parts than it lists.
 - **`scripts/export_pipeline_to_feed.py`** now reads `Opportunity_Detail` too, so
   the rescue rebuild no longer silently drops the detail fields, and it preserves
   author-chosen `key` values instead of overwriting them with the OPP-ID.
