@@ -82,11 +82,11 @@ function trailingSum(rows, sumField, dateField, daysBack, offset = 0) {
 AS_OF = excelDateToJS(getCell('Dashboard', 'C4'));
 
 const screenings = readSheet('Screenings', 4, { num:0, company:1, contact:2, setAside:3, date:4, ndaDate:5, vertical:6, classification:7 })
-  .map(r => ({ ...r, date: excelDateToJS(r.date) })).filter(r => r.date && r.company);
+  .map(r => ({ ...r, date: excelDateToJS(r.date) })).filter(r => r.date && r.num);
 const ndas = readSheet('NDAs', 4, { num:0, entity:1, contact:2, date:3, filename:4, status:5, classification:6 })
-  .map(r => ({ ...r, date: excelDateToJS(r.date) })).filter(r => r.date && r.entity);
+  .map(r => ({ ...r, date: excelDateToJS(r.date) })).filter(r => r.date && r.num);
 const agreements = readSheet('Agreements', 4, { num:0, party:1, contact:2, date:3, type:4, filename:5, status:6, notes:7 })
-  .map(r => ({ ...r, date: excelDateToJS(r.date) })).filter(r => r.date && r.party);
+  .map(r => ({ ...r, date: excelDateToJS(r.date) })).filter(r => r.date && r.num);
 const meetings = readSheet('Meetings', 4, { date:0, partner:1, attendees:2, type:3, outcome:4, nextStep:5, owner:6 })
   .map(r => ({ ...r, date: excelDateToJS(r.date) })).filter(r => r.date);
 const pipeline = readSheet('Pipeline', 4, { id:0, name:1, client:2, naics:3, stage:4, value:5, identified:6, stageDate:7, owner:8, notes:9 })

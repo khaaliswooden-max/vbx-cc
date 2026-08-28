@@ -1649,6 +1649,9 @@ function parseWorkbook(workbook) {
   })).filter(r => r.id);
 
   // ----- Screenings: A=#, B=Co, C=Contact, D=SetAside, E=ScreenDateNorm, F=NDADate, G=Vertical, H=Classification -----
+  // Rows are identified by the row number, not the company name: the published
+  // copy withholds partner identities, and keying on a withheld column would
+  // silently drop every row and zero the KPI counts.
   const scrnRaw = readSheet('Screenings', 4, {
     num: 0, company: 1, contact: 2, setAside: 3, date: 4,
     ndaDate: 5, vertical: 6, classification: 7
@@ -1657,19 +1660,19 @@ function parseWorkbook(workbook) {
     ...r,
     date: excelDateToJS(r.date),
     ndaDate: r.ndaDate ? excelDateToJS(r.ndaDate) : null,
-  })).filter(r => r.date && r.company);
+  })).filter(r => r.date && r.num);
 
   // ----- NDAs: A=#, B=Entity, C=Contact, D=Date, E=File, F=Status, G=Classification -----
   const ndaRaw = readSheet('NDAs', 4, {
     num: 0, entity: 1, contact: 2, date: 3, filename: 4, status: 5, classification: 6
   });
-  data.ndas = ndaRaw.map(r => ({ ...r, date: excelDateToJS(r.date) })).filter(r => r.date && r.entity);
+  data.ndas = ndaRaw.map(r => ({ ...r, date: excelDateToJS(r.date) })).filter(r => r.date && r.num);
 
   // ----- Agreements: A=#, B=Party, C=Contact, D=Date, E=Type, F=File, G=Status, H=Notes -----
   const agrRaw = readSheet('Agreements', 4, {
     num: 0, party: 1, contact: 2, date: 3, type: 4, filename: 5, status: 6, notes: 7
   });
-  data.agreements = agrRaw.map(r => ({ ...r, date: excelDateToJS(r.date) })).filter(r => r.date && r.party);
+  data.agreements = agrRaw.map(r => ({ ...r, date: excelDateToJS(r.date) })).filter(r => r.date && r.num);
 
   return data;
 }
@@ -2364,8 +2367,8 @@ function renderNDATable(rows) {
     </tr></thead><tbody>
     ${sorted.map(r => `<tr>
       <td>${r.num || ''}</td>
-      <td>${r.entity || ''}</td>
-      <td>${r.contact || ''}</td>
+      <td>${r.entity || '—'}</td>
+      <td>${r.contact || '—'}</td>
       <td>${fmtDate(r.date)}</td>
       <td>${r.status || ''}</td>
       <td>${r.classification ? `<span class="classification-pill class-${r.classification}">${r.classification}</span>` : ''}</td>
@@ -2381,8 +2384,8 @@ function renderAgreementsTable(rows) {
     </tr></thead><tbody>
     ${sorted.map(r => `<tr>
       <td>${r.num || ''}</td>
-      <td>${r.party || ''}</td>
-      <td>${r.contact || ''}</td>
+      <td>${r.party || '—'}</td>
+      <td>${r.contact || '—'}</td>
       <td>${fmtDate(r.date)}</td>
       <td>${r.type || ''}</td>
       <td>${r.status || ''}</td>
@@ -2398,7 +2401,7 @@ function renderMeetingsTable(rows) {
     </tr></thead><tbody>
     ${sorted.map(r => `<tr>
       <td>${fmtDate(r.date)}</td>
-      <td>${r.partner || ''}</td>
+      <td>${r.partner || '—'}</td>
       <td>${r.type || ''}</td>
       <td style="max-width:340px;">${r.outcome || ''}</td>
       <td>${r.nextStep || ''}</td>
@@ -2415,8 +2418,8 @@ function renderScreeningsTable(rows) {
     </tr></thead><tbody>
     ${sorted.map(r => `<tr>
       <td>${r.num || ''}</td>
-      <td>${r.company || ''}</td>
-      <td>${r.contact || ''}</td>
+      <td>${r.company || '—'}</td>
+      <td>${r.contact || '—'}</td>
       <td>${r.setAside || ''}</td>
       <td>${fmtDate(r.date)}</td>
       <td>${r.ndaDate ? fmtDate(r.ndaDate) : '—'}</td>

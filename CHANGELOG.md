@@ -9,6 +9,108 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security — internal capture prose was being served publicly (2026-08-28)
+Found while auditing which `Opportunity_Detail` values would be safe to publish.
+The `Pipeline` **Notes** column — ~21,000 characters of internal capture prose
+across 25 rows — was being served on the public, search-indexable GitHub Pages
+site, and had been since the full workbook was first published. It carried
+teaming partner names, Pwin scores and EV math, bench size, no-bid rationale,
+and in `Pipeline!J25` the **CAHSP / GRHD framework names that Hard Rule #8
+forbids in any external-facing artifact** — in a sentence whose own subject was
+that those names must never be disclosed. `pages.yml`'s owner exception states
+that Rule #8 "still applies to anything served", so this was not covered by it.
+
+This predates the `Opportunity_Detail` work; the 2026-08-28 sheet strip did not
+touch it. Fixed here.
+
+- `scripts/build_leadership_feed.py` reworked from "strip whole sheets" to a
+  **disclosure allowlist** (`PUBLISH_COLUMNS`). Named columns may be published;
+  everything else in the sheet is withheld. Fail-closed: a column added later is
+  withheld by default rather than published because nobody remembered to redact
+  it. Cells are blanked in place (header included — a column label can disclose
+  on its own), styles preserved, all other package parts copied byte-for-byte so
+  cached formula results survive.
+- **Withheld:** `Pipeline!J` (Notes) in full, and the BD half of
+  `Opportunity_Detail` — `bd_posture`, `teaming_status`, `next_milestone`,
+  `milestone_owner`, `win_theme`, `staffing_gap`.
+- **Published:** the technical half — `response_due`, `scope_summary`,
+  `capabilities_required`, `labor_categories`, `compliance_gates`,
+  `place_of_performance`, `period_of_performance` — so operations and delivery
+  get the live auto-updating link they asked for (owner decision, 2026-08-28).
+- **Feed content pass.** Published fields now state the *solicitation's
+  requirement*; VBX's standing against it moved to the withheld `staffing_gap`.
+  Nine `scope_summary` values lost VBX-positioning or competitor reads, six
+  `compliance_gates` lists were rewritten from "not held / absent / unresolved"
+  to the bare requirement, and two `labor_categories` mis-fills holding our own
+  team roster (not solicitation LCATs) were cleared — the rosters remain in each
+  record's notes, so nothing is lost internally.
+- **Three fatal build guards**, none of which write output when they trip:
+  allowlist assertion (a cell outside the allowlist survived), leak scan (a
+  withheld value appears anywhere in the package bytes), and a Hard Rule #8 term
+  scan. `pages.yml` repeats the Rule #8 check independently so a change to the
+  builder cannot quietly disarm the deploy gate. A formula cell is never blanked.
+- Verified on both workbook shapes, with negative tests for every guard: the
+  Rule #8 scan refuses the pre-fix live file; the allowlist assertion catches a
+  redaction pass that silently does nothing; an unclassified new column is
+  withheld by default; formula caches (`Targets!C11-C14`, `D34-D38`) survive.
+
+**Partner-bearing sheets folded into the same allowlist** (owner decision,
+2026-08-28). `Screenings` (73 rows), `NDAs` (25), `Meetings` (59) and
+`Agreements` (2) carried named individuals at third-party companies, NDA
+document filenames embedding those names, meeting outcomes, and VBX's private
+PRIORITY/BENCH/WATCHLIST/FILED assessment of each partner — all public.
+
+- Published: row numbers, dates, type, set-aside, vertical, status,
+  classification and owner — everything the BD cadence KPIs are computed from.
+- Withheld: company/entity/party names, contacts, VBX attendees, meeting
+  outcomes and next steps, and document filenames.
+- `Agreements` was not on the original list but has the same shape and the same
+  exposure; leaving it would have been an obvious gap, so it is included.
+- **`parseWorkbook` and `verify_parse.js` now key row identity on the row
+  number, not the partner name.** The filters previously required
+  `company` / `entity` / `party`, so withholding those columns would have
+  dropped every row and shown leadership "0 NDAs executed" rather than an
+  error. Verified after the change: identical counts on both copies —
+  73 screenings, 25 NDAs, 2 agreements, 59 meetings — identical classification
+  distribution (PRIORITY 22, BENCH 9, WATCHLIST 13, FILED 23, PENDING 6), and
+  identical rendered BD cadence KPIs, with every identity field empty in the
+  published copy. Withheld identity columns render as an em dash so an
+  anonymised table reads as deliberate rather than broken.
+
+Exposure on a 16-term probe (partner names, personal names, NDA filenames,
+suppressed terms) went from **16/16 public to 1/16**.
+
+Two review findings on the redaction mechanism, both fixed:
+
+- **The leak scan had a blind spot exactly where this change adds risk.** Its
+  12-character floor existed to stop short strings matching markup in the raw
+  package bytes, but the newly withheld set is full of short names — 54 values
+  under 12 characters, including `AgileCare`, `Anna Olvera`, `Bryan Read` and
+  `CAGAIL LLC`. The scan now reads text **content** (shared strings including
+  unreferenced entries, inline cell strings, comments, hyperlink targets and
+  their display/tooltip text, document properties) rather than raw bytes, so the
+  floor drops to 3 with word-boundary matching under 8 characters. Coverage goes
+  from 305 to 355 of 359 withheld-unique values. Verified by muting the Rule #8
+  gate and disabling orphan blanking: the scan reports 355 and refuses to write.
+- **Blanking a `<c>` element does not remove a hyperlink anchored to it.** Excel
+  turns a typed email address into a `<hyperlink>` carrying a `mailto` target and
+  often a display name, stored outside the cell — so a withheld contact could
+  ship as a link. Hyperlinks anchored in a withheld column are now dropped, the
+  container removed if it empties (`CT_Hyperlinks` requires a child, so an empty
+  one makes Excel offer to repair the file), and links on published cells are
+  left alone. No instances exist in the workbook today; this closes the
+  mechanism before one appears. Anything the removal misses the leak scan now
+  catches, since it reads hyperlink text as content.
+
+⚠️ **Still public, not changed here:** GSA SIN 54151HEAL on `Dashboard!B33`
+("Refresh 31 remediation (7 deficiencies open)"). The `Meetings!E57` instance is
+now withheld. `Dashboard` is a formatted summary sheet rather than a table, so
+redacting one cell there needs cell-level rather than column-level targeting —
+a small addition if wanted.
+
+⚠️ Pages is search-indexable, so removal stops further exposure but does not
+retract what has already been fetched or cached.
+
 ### Added — BD posture & technical detail per opportunity (2026-08-28)
 Requested by the technical team: operations and delivery could see an opportunity's
 name, stage, and dollar value, but nothing about how they would be expected to

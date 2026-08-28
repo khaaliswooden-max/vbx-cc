@@ -97,13 +97,28 @@ inside the pipeline drill-down — to open that opportunity's brief: a facts str
 **BD Posture** and **Technical Scope**, with the original capture notes underneath.
 The drill-down table also gains Posture and Response Due columns.
 
-### It is not published
+### What is published, and what is not
 
-`Opportunity_Detail` is internal. GitHub Pages is public and search-indexable, so
-`scripts/build_leadership_feed.py` strips the sheet from the copy the Pages
-workflow serves, and the workflow fails the deploy if it somehow survives. The
-published dashboard degrades cleanly — every detail panel reads "Not yet
-recorded". Nothing about the committed workbook changes.
+GitHub Pages is public and search-indexable, so `scripts/build_leadership_feed.py`
+applies a disclosure allowlist to the copy the Pages workflow serves. The
+committed workbook is never modified.
+
+| Published | Withheld |
+|---|---|
+| `response_due`, `scope_summary`, `capabilities_required`, `labor_categories`, `compliance_gates`, `place_of_performance`, `period_of_performance` | `bd_posture`, `teaming_status`, `next_milestone`, `milestone_owner`, `win_theme`, `staffing_gap`, and the whole `Pipeline` **Notes** column |
+
+The split is by *who the sentence is about*. A published field states what the
+**solicitation requires**; a withheld field states **VBX's own position** against
+it. So when you fill these in:
+
+- `"SOC 2 Type 2"` — publishable, it is the solicitation's requirement.
+- `"SOC 2 Type 2 — not held"` — **not** publishable. Put that in `staffing_gap`.
+- `"Cyber liability — up to $10M may be required"` — publishable.
+- `"...vs $6M held"` — `staffing_gap`.
+
+On the public dashboard the withheld fields read "Not yet recorded" and the
+Capture Notes panel is absent; internally everything shows. The build writes no
+output and fails the deploy if anything outside the allowlist survives.
 
 ## Edit an existing opportunity
 

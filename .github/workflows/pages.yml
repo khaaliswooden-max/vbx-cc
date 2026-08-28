@@ -15,12 +15,18 @@ name: Publish leadership dashboard
 # it is used automatically — no workflow change required.
 #
 # Either way the copy that reaches _site is passed through
-# scripts/build_leadership_feed.py first, which strips internal-only sheets
-# (currently Opportunity_Detail — BD posture, win themes, teaming status,
-# compliance and staffing gaps). Pages is public and search-indexable, and that
-# sheet is delivery-planning material, not leadership-summary content. The
-# dashboard degrades cleanly without it: every detail panel reads
-# "Not yet recorded". The committed workbook is never modified.
+# scripts/build_leadership_feed.py first, which applies the disclosure
+# allowlist: it publishes the technical half of Opportunity_Detail (scope,
+# capabilities, LCATs, compliance gates, place/period of performance, response
+# due) and withholds the BD half, and it withholds Pipeline!J (Notes) entirely —
+# ~21k characters of internal capture prose that had been served publicly until
+# 2026-08-28. The committed workbook is never modified.
+#
+# The policy is an ALLOWLIST, so a column added later is withheld by default
+# rather than published by omission. The build fails, writing no output, if:
+#   * a cell outside the allowlist survives,
+#   * a withheld value appears anywhere in the package bytes, or
+#   * a Hard Rule #8 term appears anywhere in the package (no exception exists).
 # ============================================================
 
 on:
@@ -79,15 +85,14 @@ jobs:
             echo "::error::No workbook found to publish."
             exit 1
           fi
-          # Strip internal-only sheets on the way out. Aborts (non-zero) rather
-          # than publishing if a formula would be orphaned by the strip.
+          # Apply the disclosure allowlist on the way out. Writes no output and
+          # exits non-zero if anything outside the allowlist survives.
           python scripts/build_leadership_feed.py "$SOURCE_WORKBOOK" _site/VBX_Command_Center_v1.1.xlsx
-          # build_leadership_feed.py is the real guarantee: it scans the package
-          # it just wrote for any value unique to the stripped sheet (shared
-          # string tables outlive a deleted worksheet) and exits non-zero without
-          # writing output if anything survives. This is a cheap final assertion
-          # on top of that. sys.exit(<str>) prints and exits non-zero.
-          python -c "import openpyxl, sys; sys.exit('::error::Opportunity_Detail survived into the published workbook. Refusing to deploy.' if 'Opportunity_Detail' in openpyxl.load_workbook('_site/VBX_Command_Center_v1.1.xlsx').sheetnames else 0)"
+          # Independent check on the artifact about to ship: Hard Rule #8 names
+          # must never reach a served file. The builder already enforces this;
+          # repeating it here means a change to the builder cannot quietly
+          # disarm the deploy gate. sys.exit(<str>) prints and exits non-zero.
+          python -c "import zipfile, sys; z = zipfile.ZipFile('_site/VBX_Command_Center_v1.1.xlsx'); blob = b''.join(z.read(n) for n in z.namelist()).decode('utf-8', 'ignore'); hits = [t for t in ('CAHSP', 'GRHD') if t in blob]; sys.exit(f'::error::Hard Rule #8 term(s) {hits} present in the published workbook. Refusing to deploy.' if hits else 0)"
 
       - uses: actions/upload-pages-artifact@v3
         with:

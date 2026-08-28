@@ -229,10 +229,16 @@ def dump_feed(path: str | Path, records: list[dict]) -> None:
     ordered_keys = ["key"] + COLUMNS + DETAIL_FIELDS
     lines = []
     for r in records:
-        obj = {k: r[k] for k in ordered_keys if k in r}
-        # keep any extra keys (forward-compatible) after the known ones
+        # An empty list carries no information and the sheet cannot represent it
+        # distinctly from an empty cell, so omit the key entirely. Without this a
+        # workbook -> feed export would drop it and the round-trip would not be
+        # byte-identical.
+        obj = {k: r[k] for k in ordered_keys if k in r and r[k] != []}
+        # keep any UNKNOWN keys (forward-compatible) after the known ones. This
+        # must skip keys already considered above, or it re-adds the empty lists
+        # the filter just dropped.
         for k in r:
-            if k not in obj:
+            if k not in ordered_keys and k not in obj and r[k] != []:
                 obj[k] = r[k]
         lines.append(json.dumps(obj, ensure_ascii=False))
     Path(path).write_text("\n".join(lines) + "\n", encoding="utf-8")
