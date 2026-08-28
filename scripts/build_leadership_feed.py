@@ -80,6 +80,21 @@ PUBLISH_COLUMNS: dict[str, tuple[int, ...]] = {
     # withheld: C=BDPosture D=TeamingStatus F=NextMilestone G=MilestoneOwner
     #           H=WinTheme O=StaffingGap
     "Opportunity_Detail": (1, 2, 5, 9, 10, 11, 12, 13, 14),
+    # --- partner-bearing sheets (owner decision, 2026-08-28) ---
+    # Counts, dates, classifications and set-aside/vertical mix stay public so
+    # the BD cadence KPIs keep working; the identities behind them do not.
+    # These carry NAMED INDIVIDUALS at third-party companies and VBX's private
+    # PRIORITY/BENCH/WATCHLIST/FILED assessment of them.
+    # A=Date D=Type G=Owner | withheld B=Partner C=Attendees E=Outcome F=NextStep
+    "Meetings": (1, 4, 7),
+    # A=# D=SetAside E=ScreenDate F=NDADate G=Vertical H=Classification
+    # I=DisplayDate | withheld B=Company C=Contact
+    "Screenings": (1, 4, 5, 6, 7, 8, 9),
+    # A=# D=Date F=Status G=Classification
+    # withheld B=Entity C=Contact E=Filename (filenames embed personal names)
+    "NDAs": (1, 4, 6, 7),
+    # A=# D=Date E=Type G=Status | withheld B=Party C=Contact F=Filename H=Notes
+    "Agreements": (1, 4, 5, 7),
 }
 
 

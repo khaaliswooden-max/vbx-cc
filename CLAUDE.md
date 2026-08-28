@@ -345,6 +345,21 @@ time so they never collide.
    withheld value appears anywhere in the package bytes, or if a Hard Rule #8
    term appears anywhere in it. Whole internal-only sheets go in `STRIP_SHEETS`.
 
+   **The allowlist also covers the partner-bearing sheets** (owner decision,
+   2026-08-28). `Screenings`, `NDAs`, `Agreements` and `Meetings` carry named
+   individuals at third-party companies, document filenames that embed those
+   names, and VBX's private PRIORITY/BENCH/WATCHLIST/FILED assessment of each
+   partner. Dates, counts, set-aside/vertical mix, status and classification are
+   published so the BD cadence KPIs keep working; the identities behind them are
+   not. Verified: identical KPI counts and classification distribution on both
+   copies, with zero identity fields in the published one.
+
+   ⚠️ **Row identity must never key on a column the allowlist can withhold.**
+   `parseWorkbook` filters these sheets on the row number, not the partner name
+   — keying on a withheld column silently drops every row and zeroes the KPI,
+   which reads as "no NDAs executed" rather than as an error. `verify_parse.js`
+   mirrors the same filters.
+
 Note: this covers the `Pipeline` and `Opportunity_Detail` sheets only. Other input
 sheets are still edited in Excel / via the builder per Workflows C and E.
 

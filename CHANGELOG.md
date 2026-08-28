@@ -54,11 +54,40 @@ touch it. Fixed here.
   redaction pass that silently does nothing; an unclassified new column is
   withheld by default; formula caches (`Targets!C11-C14`, `D34-D38`) survive.
 
-⚠️ **Still public, by the standing 2026-06-05 owner exception** — not changed
-here: partner names and NDA counterparties on the `Screenings`, `NDAs` and
-`Meetings` sheets, and GSA SIN 54151HEAL on `Dashboard!B33` and `Meetings!E57`.
-Pages is search-indexable, so removal stops further exposure but does not retract
-what has already been fetched or cached.
+**Partner-bearing sheets folded into the same allowlist** (owner decision,
+2026-08-28). `Screenings` (73 rows), `NDAs` (25), `Meetings` (59) and
+`Agreements` (2) carried named individuals at third-party companies, NDA
+document filenames embedding those names, meeting outcomes, and VBX's private
+PRIORITY/BENCH/WATCHLIST/FILED assessment of each partner — all public.
+
+- Published: row numbers, dates, type, set-aside, vertical, status,
+  classification and owner — everything the BD cadence KPIs are computed from.
+- Withheld: company/entity/party names, contacts, VBX attendees, meeting
+  outcomes and next steps, and document filenames.
+- `Agreements` was not on the original list but has the same shape and the same
+  exposure; leaving it would have been an obvious gap, so it is included.
+- **`parseWorkbook` and `verify_parse.js` now key row identity on the row
+  number, not the partner name.** The filters previously required
+  `company` / `entity` / `party`, so withholding those columns would have
+  dropped every row and shown leadership "0 NDAs executed" rather than an
+  error. Verified after the change: identical counts on both copies —
+  73 screenings, 25 NDAs, 2 agreements, 59 meetings — identical classification
+  distribution (PRIORITY 22, BENCH 9, WATCHLIST 13, FILED 23, PENDING 6), and
+  identical rendered BD cadence KPIs, with every identity field empty in the
+  published copy. Withheld identity columns render as an em dash so an
+  anonymised table reads as deliberate rather than broken.
+
+Exposure on a 13-term probe (partner names, personal names, NDA filenames,
+suppressed terms) went from **13/13 public to 1/13**.
+
+⚠️ **Still public, not changed here:** GSA SIN 54151HEAL on `Dashboard!B33`
+("Refresh 31 remediation (7 deficiencies open)"). The `Meetings!E57` instance is
+now withheld. `Dashboard` is a formatted summary sheet rather than a table, so
+redacting one cell there needs cell-level rather than column-level targeting —
+a small addition if wanted.
+
+⚠️ Pages is search-indexable, so removal stops further exposure but does not
+retract what has already been fetched or cached.
 
 ### Added — BD posture & technical detail per opportunity (2026-08-28)
 Requested by the technical team: operations and delivery could see an opportunity's
