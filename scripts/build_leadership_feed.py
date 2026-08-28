@@ -1,47 +1,50 @@
 #!/usr/bin/env python3
 """
-build_leadership_feed.py — strip internal-only sheets before publishing.
+build_leadership_feed.py — redact internal content before publishing.
 
 WHY THIS EXISTS
 The leadership dashboard is served from GitHub Pages, which is PUBLIC and
 search-indexable (CLAUDE.md Hard Rule #7 and the owner's 2026-06-05 exception,
-which warns about exactly this). The workbook carries the operational record, so
-anything left in the file that the Pages build copies is published with it.
+which warns about exactly this). Anything left in the workbook the Pages build
+copies is published with it.
 
-The Opportunity_Detail sheet added 2026-08-28 holds BD posture, win themes,
-teaming status, compliance gaps, and staffing gaps for every pursuit. That is
-internal planning material for the operations and delivery teams — it is not
-leadership-summary content and must not be search-indexable. This script removes
-it from the copy that gets published. The committed workbook is never modified.
+WHAT IS WITHHELD, AND WHY
+  * Pipeline!J (Notes) — ~21k characters of internal capture prose: teaming
+    partner names, Pwin scores and EV math, bench size, no-bid rationale, and
+    (in one row) the internal framework names Hard Rule #8 forbids externally.
+    This was being served publicly before 2026-08-28; redacting it is the fix.
+  * Opportunity_Detail BD columns — bd_posture, teaming_status, next_milestone,
+    milestone_owner, win_theme, staffing_gap. The sheet's TECHNICAL half (scope,
+    capabilities, LCATs, compliance gates, place/period of performance, response
+    due) IS published, so operations and delivery get the live link they need
+    without putting competitive posture on the open web (owner decision,
+    2026-08-28).
 
-The dashboard degrades cleanly without the sheet: its parser returns [] for a
-missing sheet and every detail panel reads "Not yet recorded", so the published
-leadership view keeps working exactly as it did before the sheet existed.
+Values in the published fields state the SOLICITATION's requirement; VBX's own
+standing against it lives in the withheld fields. Keep it that way when editing
+the feed: "SOC 2 Type 2" is publishable, "SOC 2 Type 2 — not held" is not.
 
 WHY THIS EDITS THE ZIP INSTEAD OF USING OPENPYXL
-An .xlsx is a zip of XML parts. Removing a sheet with openpyxl means load + save,
-and openpyxl does not preserve CACHED FORMULA RESULTS — it writes the formula
-string but drops the last-computed value. The dashboard reads only cached values
-(SheetJS `cell.v`), and nine of the eleven cells it pulls with getCell() are
-formulas: Targets!C11-C14 (confirmed revenue, run-rate P/L, break-even gap, ARR
-gap) and Targets!D34-D38 (the five BD monthly targets). An openpyxl round-trip on
-the publish path would blank all nine and silently drop those KPIs to the
-hardcoded defaults in the HTML.
+An .xlsx is a zip of XML parts. openpyxl does not preserve CACHED FORMULA
+RESULTS, and the dashboard reads only those (SheetJS `cell.v`): nine of the
+eleven cells it pulls via getCell() are formulas — Targets!C11-C14 (confirmed
+revenue, run-rate P/L, break-even gap, ARR gap) and Targets!D34-D38 (BD monthly
+targets). A load/save on the publish path would blank all nine. So this edits the
+package directly and copies every untouched part through byte-for-byte.
 
-So this operates on the package directly: it removes the sheet's parts and the
-references to them, and copies every other part through byte-for-byte. Cached
-values, styles, and everything else survive exactly as the source had them.
+Blanking a cell is not enough on its own: Excel stores text in a workbook-wide
+shared string table that survives the cell, so orphaned entries are blanked too.
 
-Safe to run repeatedly; it always writes a fresh copy from the source workbook.
+TWO GUARDS, both fatal — no output is written if either trips:
+  * leak scan — no value unique to a redacted cell may appear anywhere in the
+    package. Content, not sheet listings: "the sheet isn't listed" says nothing
+    about whether its text is still in the file.
+  * forbidden-term scan — Hard Rule #8 names must never appear in a served
+    artifact. This admits no exception and no override.
 
     python scripts/build_leadership_feed.py [in.xlsx] [out.xlsx]
 
 Defaults: VBX_Command_Center_v1.1.xlsx -> data/leadership_feed.xlsx
-
-NOTE ON SCOPE: this strips the internal detail sheet only. The rest of the
-workbook — partner, NDA, and revenue detail — is published as before under the
-owner's standing exception. Widening the redaction is an owner decision, not a
-default; add sheets to STRIP_SHEETS (or column-level redaction) when authorized.
 """
 from __future__ import annotations
 
@@ -54,38 +57,63 @@ from pathlib import Path
 from xml.sax.saxutils import escape
 
 import openpyxl
+from openpyxl.utils import get_column_letter
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import pipeline_feed as pf  # noqa: E402
 
-# Sheets removed from the published copy. Nothing in the workbook references
-# these, so removing them cannot orphan a formula.
-STRIP_SHEETS = (pf.DETAIL_SHEET,)
+# Whole sheets removed from the published copy. None today — Opportunity_Detail
+# is now published in redacted form — but the machinery stays for future
+# internal-only sheets.
+STRIP_SHEETS: tuple[str, ...] = ()
+
+# Disclosure policy is an ALLOWLIST, deliberately: name the columns that MAY be
+# published and everything else in the sheet is withheld. Fail-closed — a column
+# added to either sheet later is withheld until someone classifies it, rather
+# than published because nobody remembered to redact it.
+PUBLISH_COLUMNS: dict[str, tuple[int, ...]] = {
+    # A=OppID B=Name C=Client D=NAICS E=Stage F=Value G=Identified H=StageDate
+    # I=Owner | J=Notes withheld (internal capture prose)
+    "Pipeline": (1, 2, 3, 4, 5, 6, 7, 8, 9),
+    # A=OppID B=Name E=ResponseDue I=Scope J=Capabilities K=LaborCats
+    # L=ComplianceGates M=PlaceOfPerf N=PeriodOfPerf
+    # withheld: C=BDPosture D=TeamingStatus F=NextMilestone G=MilestoneOwner
+    #           H=WinTheme O=StaffingGap
+    "Opportunity_Detail": (1, 2, 5, 9, 10, 11, 12, 13, 14),
+}
+
+
+def redaction_plan(src: Path) -> dict[str, tuple[int, ...]]:
+    """Columns to blank = every used column NOT on that sheet's allowlist."""
+    wb = openpyxl.load_workbook(src, data_only=False)
+    plan = {}
+    for sheet, allowed in PUBLISH_COLUMNS.items():
+        if sheet not in wb.sheetnames:
+            continue
+        used = wb[sheet].max_column
+        plan[sheet] = tuple(c for c in range(1, used + 1) if c not in allowed)
+    return plan
+
+# Hard Rule #8: never in an external-facing artifact. No exception exists.
+FORBIDDEN_TERMS = ("CAHSP", "GRHD")
 
 WORKBOOK_PART = "xl/workbook.xml"
-SHARED_STRINGS = "xl/sharedStrings.xml"
-APP_PROPS = "docProps/app.xml"
-# Minimum length for a string to be worth leak-scanning. Below this a value is
-# either a vocabulary term (already blanked when orphaned) or too generic to
-# match meaningfully against the package bytes.
-LEAK_MIN_LEN = 12
 WORKBOOK_RELS = "xl/_rels/workbook.xml.rels"
 CONTENT_TYPES = "[Content_Types].xml"
-# Cells whose text lives in the shared string table, e.g.
-# <c r="B5" s="7" t="s"><v>142</v></c>
+SHARED_STRINGS = "xl/sharedStrings.xml"
+APP_PROPS = "docProps/app.xml"
+CALC_CHAIN = "xl/calcChain.xml"
+LEAK_MIN_LEN = 12
+
 SHARED_CELL = re.compile(r'<c\b[^>]*\bt="s"[^>]*?>(.*?)</c>', re.S)
 SI_ENTRY = re.compile(r"<si\b[^>]*/>|<si\b.*?</si>", re.S)
 V_INT = re.compile(r"<v>(\d+)</v>")
-
-# calcChain caches Excel's formula evaluation ORDER by sheet index. Removing a
-# sheet invalidates those indices, so the part is dropped; Excel rebuilds it on
-# next open and SheetJS never reads it. Cached VALUES live in the sheet parts and
-# are untouched by this.
-CALC_CHAIN = "xl/calcChain.xml"
+ANY_CELL = re.compile(r'<c\b([^>]*?)/>|<c\b([^>]*?)>(.*?)</c>', re.S)
+REF_ATTR = re.compile(r'r="([A-Z]+)(\d+)"')
+STYLE_ATTR = re.compile(r'(\ss="\d+")')
 
 
 def _resolve(target: str, base_part: str) -> str:
-    """Resolve a relationship Target to a package part name."""
     if target.startswith("/"):
         return target.lstrip("/")
     return posixpath.normpath(posixpath.join(posixpath.dirname(base_part), target))
@@ -97,7 +125,6 @@ def _rels_part_for(part: str) -> str:
 
 
 def _referenced_parts(zf: zipfile.ZipFile, rels_part: str) -> set[str]:
-    """Parts targeted by a .rels file (external targets ignored)."""
     if rels_part not in zf.namelist():
         return set()
     xml = zf.read(rels_part).decode("utf-8")
@@ -112,34 +139,49 @@ def _referenced_parts(zf: zipfile.ZipFile, rels_part: str) -> set[str]:
     return out
 
 
+def redact_cells(xml: str, columns: set[str], first_row: int) -> tuple[str, int]:
+    """Blank the given columns' cells from the header row down, keeping styles.
+
+    The header is blanked too: a column label ("Internal Pwin", "Win Theme") can
+    disclose on its own, and the dashboard parses by column index, not by name.
+
+    A formula cell is never blanked — that would change what the workbook
+    computes. None of the redacted columns hold formulas; this asserts it.
+    """
+    count = 0
+
+    def repl(m: re.Match) -> str:
+        nonlocal count
+        attrs = m.group(1) if m.group(1) is not None else m.group(2)
+        body = m.group(3) or ""
+        ref = REF_ATTR.search(attrs or "")
+        if not ref or ref.group(1) not in columns or int(ref.group(2)) < first_row:
+            return m.group(0)
+        if "<f>" in body or "<f " in body:
+            raise SystemExit(f"ABORT: refusing to blank formula cell {ref.group(1)}{ref.group(2)}")
+        if not body.strip() and m.group(1) is not None:
+            return m.group(0)  # already empty
+        style = STYLE_ATTR.search(attrs or "")
+        count += 1
+        return f'<c r="{ref.group(1)}{ref.group(2)}"{style.group(1) if style else ""}/>'
+
+    return ANY_CELL.sub(repl, xml), count
+
+
 def blank_orphan_strings(sheet_parts: dict[str, bytes], sst_xml: str) -> tuple[str, int]:
-    """Blank shared-string entries no remaining sheet references.
+    """Blank shared-string entries no remaining sheet cell references.
 
-    Excel (unlike openpyxl, which writes inline strings) stores cell TEXT in a
-    workbook-wide table, xl/sharedStrings.xml. Deleting a worksheet part does not
-    touch that table, so on an Excel-saved workbook every string the stripped
-    sheet contributed — win themes, teaming status, staffing gaps — would still
-    sit in the published file, readable by anyone who downloads it, even though
-    the sheet no longer appears in the workbook.
-
-    Entries are blanked IN PLACE rather than removed so every surviving index
-    still resolves; the table keeps its length and no other sheet needs
-    rewriting. A string the stripped sheet shared with a retained sheet stays,
-    correctly — it is still on a published sheet.
-
-    Returns (new sst xml, number of entries blanked).
+    Blanked IN PLACE, not removed, so every surviving index still resolves and no
+    other sheet needs reindexing. A string still used by a retained cell stays.
     """
     entries = [m.group(0) for m in SI_ENTRY.finditer(sst_xml)]
     if not entries:
         return sst_xml, 0
-
     used: set[int] = set()
     for xml in sheet_parts.values():
-        text = xml.decode("utf-8")
-        for m in SHARED_CELL.finditer(text):
+        for m in SHARED_CELL.finditer(xml.decode("utf-8")):
             for v in V_INT.findall(m.group(1)):
                 used.add(int(v))
-
     blanked = 0
     rebuilt = []
     for i, entry in enumerate(entries):
@@ -148,26 +190,15 @@ def blank_orphan_strings(sheet_parts: dict[str, bytes], sst_xml: str) -> tuple[s
         else:
             rebuilt.append("<si><t/></si>")
             blanked += 1
-
-    head = sst_xml[: sst_xml.index(entries[0])] if entries else sst_xml
+    head = sst_xml[: sst_xml.index(entries[0])]
     tail = sst_xml[sst_xml.rindex(entries[-1]) + len(entries[-1]):]
     return head + "".join(rebuilt) + tail, blanked
 
 
 def fix_app_props(xml: str, removed: list[str], remaining_sheets: int) -> str:
-    """Drop stripped sheet names from docProps/app.xml and re-derive its counts.
-
-    app.xml caches a list of part titles (worksheets, then named ranges) plus
-    HeadingPairs counts for each category. Removing a title without updating the
-    vector size and the matching count leaves a document that declares more parts
-    than it lists — which Excel's file properties and some repair paths trust.
-
-    Counts are RE-DERIVED from what actually remains rather than decremented, so
-    the result is self-consistent no matter what was removed.
-    """
+    """Drop stripped sheet names from docProps/app.xml and re-derive its counts."""
     for sheet in removed:
         xml = xml.replace(f"<vt:lpstr>{sheet}</vt:lpstr>", "")
-
     m = re.search(r"(<TitlesOfParts>\s*<vt:vector)([^>]*)(>)(.*?)(</vt:vector>\s*</TitlesOfParts>)", xml, re.S)
     if not m:
         return xml
@@ -179,52 +210,43 @@ def fix_app_props(xml: str, removed: list[str], remaining_sheets: int) -> str:
     def set_count(text: str, label: str, count: int) -> str:
         return re.sub(
             rf"(<vt:lpstr>{re.escape(label)}</vt:lpstr>\s*</vt:variant>\s*<vt:variant>\s*<vt:i4>)\d+(</vt:i4>)",
-            rf"\g<1>{count}\g<2>", text, flags=re.S,
-        )
+            rf"\g<1>{count}\g<2>", text, flags=re.S)
 
     xml = set_count(xml, "Worksheets", remaining_sheets)
     xml = set_count(xml, "Named Ranges", max(total - remaining_sheets, 0))
     return xml
 
 
-def strip_sheets(src: Path, dst: Path, sheet_names) -> list[str]:
-    """Remove sheets from the package, copying all other parts verbatim.
-
-    Returns the list of sheet names actually removed.
-    """
-    removed: list[str] = []
+def build(src: Path, dst: Path, redact: dict[str, tuple[int, ...]]) -> tuple[list[str], int, int]:
+    """Write the published copy. Returns (stripped sheets, cells blanked, strings blanked)."""
     with zipfile.ZipFile(src) as zin:
         names = zin.namelist()
         wb_xml = zin.read(WORKBOOK_PART).decode("utf-8")
         rels_xml = zin.read(WORKBOOK_RELS).decode("utf-8")
 
-        # rId -> part name, from the workbook's relationships
         rid_to_part = {}
         for m in re.finditer(r"<Relationship\b[^>]*>", rels_xml):
-            tag = m.group(0)
-            rid = re.search(r'Id="([^"]+)"', tag)
-            tgt = re.search(r'Target="([^"]+)"', tag)
+            rid = re.search(r'Id="([^"]+)"', m.group(0))
+            tgt = re.search(r'Target="([^"]+)"', m.group(0))
             if rid and tgt:
                 rid_to_part[rid.group(1)] = _resolve(tgt.group(1), WORKBOOK_PART)
 
-        drop_parts: set[str] = set()
-        drop_rids: set[str] = set()
+        sheet_to_part, drop_parts, drop_rids, removed = {}, set(), set(), []
         for m in re.finditer(r"<sheet\b[^>]*/>", wb_xml):
             tag = m.group(0)
             name = re.search(r'name="([^"]+)"', tag)
             rid = re.search(r'r:id="([^"]+)"', tag)
-            if not name or name.group(1) not in sheet_names:
+            if not name or not rid:
                 continue
-            removed.append(name.group(1))
-            wb_xml = wb_xml.replace(tag, "")
-            if rid:
+            part = rid_to_part.get(rid.group(1))
+            sheet_to_part[name.group(1)] = part
+            if name.group(1) in STRIP_SHEETS:
+                removed.append(name.group(1))
+                wb_xml = wb_xml.replace(tag, "")
                 drop_rids.add(rid.group(1))
-                part = rid_to_part.get(rid.group(1))
                 if part:
                     drop_parts.add(part)
                     sheet_rels = _rels_part_for(part)
-                    # Drop the sheet's own rels, plus any part ONLY it referenced
-                    # (drawings, comments, printerSettings) so nothing leaks.
                     own = _referenced_parts(zin, sheet_rels)
                     others: set[str] = set()
                     for rp in names:
@@ -234,49 +256,52 @@ def strip_sheets(src: Path, dst: Path, sheet_names) -> list[str]:
                     if sheet_rels in names:
                         drop_parts.add(sheet_rels)
 
-        if not removed:
-            shutil.copyfile(src, dst)
-            return removed
-
-        # definedNames pointing at a stripped sheet would dangle.
-        for m in re.finditer(r"<definedName\b[^>]*>.*?</definedName>", wb_xml, re.S):
-            body = m.group(0)
-            if any(re.search(rf"(^|[^A-Za-z0-9_]){re.escape(s)}!", body) for s in removed):
-                wb_xml = wb_xml.replace(body, "")
-
+        for sheet in removed:
+            for dm in re.finditer(r"<definedName\b[^>]*>.*?</definedName>", wb_xml, re.S):
+                if re.search(rf"(^|[^A-Za-z0-9_]){re.escape(sheet)}!", dm.group(0)):
+                    wb_xml = wb_xml.replace(dm.group(0), "")
         for rid in drop_rids:
             rels_xml = re.sub(rf'<Relationship\b[^>]*Id="{re.escape(rid)}"[^>]*/>', "", rels_xml)
-            rels_xml = re.sub(rf'<Relationship\b[^>]*Id="{re.escape(rid)}"[^>]*>.*?</Relationship>',
-                              "", rels_xml, flags=re.S)
 
-        if CALC_CHAIN in names:
+        # --- blank redacted cells in place ---
+        edited: dict[str, bytes] = {}
+        cells_blanked = 0
+        for sheet, cols in redact.items():
+            part = sheet_to_part.get(sheet)
+            if not part or part in drop_parts or part not in names:
+                continue
+            letters = {get_column_letter(c) for c in cols}
+            xml = zin.read(part).decode("utf-8")
+            xml, n = redact_cells(xml, letters, pf.HEADER_ROW)
+            edited[part] = xml.encode("utf-8")
+            cells_blanked += n
+
+        if CALC_CHAIN in names and removed:
             drop_parts.add(CALC_CHAIN)
-            calc_rid = next((r for r, p in rid_to_part.items() if p == CALC_CHAIN), None)
-            if calc_rid:
-                rels_xml = re.sub(rf'<Relationship\b[^>]*Id="{re.escape(calc_rid)}"[^>]*/>', "", rels_xml)
+            crid = next((r for r, p in rid_to_part.items() if p == CALC_CHAIN), None)
+            if crid:
+                rels_xml = re.sub(rf'<Relationship\b[^>]*Id="{re.escape(crid)}"[^>]*/>', "", rels_xml)
+
+        # --- purge orphaned shared strings, using the REDACTED sheet bodies ---
+        sst_xml, strings_blanked = None, 0
+        if SHARED_STRINGS in names and SHARED_STRINGS not in drop_parts:
+            surviving = {
+                n: edited.get(n) or zin.read(n)
+                for n in names
+                if n.startswith("xl/worksheets/") and n.endswith(".xml") and n not in drop_parts
+            }
+            sst_xml, strings_blanked = blank_orphan_strings(
+                surviving, zin.read(SHARED_STRINGS).decode("utf-8"))
+
+        app_xml = None
+        if APP_PROPS in names and removed:
+            raw = zin.read(APP_PROPS).decode("utf-8")
+            if any(s in raw for s in removed):
+                app_xml = fix_app_props(raw, removed, len(re.findall(r"<sheet\b", wb_xml)))
 
         ct_xml = zin.read(CONTENT_TYPES).decode("utf-8")
         for part in drop_parts:
             ct_xml = re.sub(rf'<Override\b[^>]*PartName="/{re.escape(part)}"[^>]*/>', "", ct_xml)
-
-        # Purge the stripped sheet's text from the shared string table, which
-        # deleting the worksheet part does NOT do (see blank_orphan_strings).
-        sst_xml = None
-        blanked = 0
-        if SHARED_STRINGS in names and SHARED_STRINGS not in drop_parts:
-            surviving = {
-                n: zin.read(n)
-                for n in names
-                if n.startswith("xl/worksheets/") and n.endswith(".xml") and n not in drop_parts
-            }
-            sst_xml, blanked = blank_orphan_strings(surviving, zin.read(SHARED_STRINGS).decode("utf-8"))
-
-        # The cached document-properties sheet list would still name the sheet.
-        app_xml = None
-        if APP_PROPS in names:
-            raw = zin.read(APP_PROPS).decode("utf-8")
-            if any(sheet in raw for sheet in removed):
-                app_xml = fix_app_props(raw, removed, len(re.findall(r"<sheet\b", wb_xml)))
 
         dst.parent.mkdir(parents=True, exist_ok=True)
         with zipfile.ZipFile(dst, "w", zipfile.ZIP_DEFLATED) as zout:
@@ -293,52 +318,47 @@ def strip_sheets(src: Path, dst: Path, sheet_names) -> list[str]:
                     data = sst_xml.encode("utf-8")
                 elif item.filename == APP_PROPS and app_xml is not None:
                     data = app_xml.encode("utf-8")
+                elif item.filename in edited:
+                    data = edited[item.filename]
                 else:
-                    data = zin.read(item.filename)  # everything else, verbatim
+                    data = zin.read(item.filename)  # untouched, verbatim
                 zout.writestr(item, data)
-    if blanked:
-        print(f"  blanked {blanked} orphaned shared string(s)")
-    return removed
+    return removed, cells_blanked, strings_blanked
 
 
-def leak_scan(src: Path, dst: Path, removed: list[str]) -> list[str]:
-    """Values unique to a stripped sheet that still appear in the output package.
-
-    This is the check that actually matters. Asserting the sheet is no longer
-    LISTED proves nothing about whether its text is still in the file — a
-    shared string table, a comment part, or a cached property can carry the
-    content long after the worksheet is gone. So: take every string the stripped
-    sheet held, subtract anything a retained sheet also holds (that text is
-    published regardless), and confirm none of the remainder survives anywhere
-    in the bytes we are about to publish.
-    """
+def withheld_values(src: Path, redact: dict[str, tuple[int, ...]]) -> tuple[set[str], set[str]]:
+    """(values in redacted cells, values anywhere else) from the SOURCE workbook."""
     wb = openpyxl.load_workbook(src, data_only=False)
-    internal: set[str] = set()
-    retained: set[str] = set()
+    withheld, retained = set(), set()
     for ws in wb.worksheets:
-        bucket = internal if ws.title in removed else retained
+        cols = set(redact.get(ws.title, ()))
+        stripped = ws.title in STRIP_SHEETS
         for row in ws.iter_rows():
             for c in row:
-                if isinstance(c.value, str) and c.value.strip():
-                    bucket.add(c.value.strip())
+                if not isinstance(c.value, str) or not c.value.strip():
+                    continue
+                hidden = stripped or (c.column in cols and c.row >= pf.HEADER_ROW)
+                (withheld if hidden else retained).add(c.value.strip())
+    return withheld, retained
 
-    # Only values unique to the stripped sheet, and long enough to match
-    # meaningfully rather than collide with markup.
-    candidates = {
-        v for v in internal - retained
-        if len(v) >= LEAK_MIN_LEN and not any(v in r for r in retained)
-    }
+
+def leak_scan(dst: Path, withheld: set[str], retained: set[str]) -> list[str]:
+    """Withheld values that still appear in the published package."""
+    candidates = {v for v in withheld - retained
+                  if len(v) >= LEAK_MIN_LEN and not any(v in r for r in retained)}
     if not candidates:
         return []
-
     with zipfile.ZipFile(dst) as z:
         blob = b"".join(z.read(n) for n in z.namelist())
-    found = []
-    for v in sorted(candidates):
-        needles = {v.encode("utf-8"), escape(v).encode("utf-8")}
-        if any(n in blob for n in needles):
-            found.append(v)
-    return found
+    return sorted(v for v in candidates
+                  if v.encode("utf-8") in blob or escape(v).encode("utf-8") in blob)
+
+
+def forbidden_scan(dst: Path) -> list[str]:
+    """Hard Rule #8 terms present anywhere in the published package."""
+    with zipfile.ZipFile(dst) as z:
+        blob = b"".join(z.read(n) for n in z.namelist()).decode("utf-8", "ignore")
+    return [t for t in FORBIDDEN_TERMS if t in blob]
 
 
 def main() -> int:
@@ -350,45 +370,67 @@ def main() -> int:
         print(f"ERROR: source workbook not found: {src}")
         return 1
 
-    # Read-only inspection: a formula pointing at a stripped sheet would become
-    # #REF! once published. Refuse rather than publish a broken workbook.
     wb = openpyxl.load_workbook(src, data_only=False)
     before = list(wb.sheetnames)
     dangling = sorted(
-        cell
-        for cell in pf.formula_set(wb)
+        cell for cell in pf.formula_set(wb)
         for sheet in STRIP_SHEETS
-        if sheet in str(wb[cell.split("!")[0]][cell.split("!")[1]].value)
-    )
+        if sheet in str(wb[cell.split("!")[0]][cell.split("!")[1]].value))
     if dangling:
         print("ABORT: formulas reference a sheet slated for stripping:", dangling[:10])
         return 2
 
-    removed = strip_sheets(src, dst, set(STRIP_SHEETS))
+    redact = redaction_plan(src)
+    withheld, retained = withheld_values(src, redact)
+    removed, cells, strings = build(src, dst, redact)
 
-    # Verify the result opens and lost exactly what we intended.
     out = openpyxl.load_workbook(dst, data_only=False)
     expected = [s for s in before if s not in removed]
     if out.sheetnames != expected:
         print(f"ABORT: sheet list changed unexpectedly.\n  got:      {out.sheetnames}\n  expected: {expected}")
+        dst.unlink(missing_ok=True)
         return 2
 
-    # Content-level check: the sheet being gone from the listing is not the same
-    # as its data being gone from the file. Refuse to publish if anything unique
-    # to a stripped sheet survives anywhere in the package.
-    leaked = leak_scan(src, dst, removed)
+    # Independent of the redaction pass: assert the published sheet carries data
+    # only in allowlisted columns. Catches a column that policy never classified.
+    stray = []
+    for sheet, allowed in PUBLISH_COLUMNS.items():
+        if sheet not in out.sheetnames:
+            continue
+        ws = out[sheet]
+        for row in ws.iter_rows(min_row=pf.HEADER_ROW):
+            for c in row:
+                if c.value not in (None, "") and c.column not in allowed:
+                    stray.append(f"{sheet}!{c.coordinate}")
+    if stray:
+        print(f"ABORT: {len(stray)} cell(s) outside the publish allowlist survived: {stray[:8]}")
+        dst.unlink(missing_ok=True)
+        return 5
+
+    forbidden = forbidden_scan(dst)
+    if forbidden:
+        print(f"ABORT: Hard Rule #8 term(s) present in the published package: {forbidden}")
+        dst.unlink(missing_ok=True)
+        return 4
+
+    leaked = leak_scan(dst, withheld, retained)
     if leaked:
-        print(f"ABORT: {len(leaked)} value(s) unique to the stripped sheet still present in {dst}:")
+        print(f"ABORT: {len(leaked)} withheld value(s) still present in {dst}:")
         for v in leaked[:5]:
             print(f"  - {v[:100]}{'...' if len(v) > 100 else ''}")
         dst.unlink(missing_ok=True)
         return 3
 
     print(f"Leadership feed -> {dst}")
-    print(f"  stripped: {', '.join(removed) if removed else 'nothing (sheet not present)'}")
-    print(f"  kept {len(out.sheetnames)} sheet(s): {', '.join(out.sheetnames)}")
     if removed:
-        print("  leak scan: no value unique to the stripped sheet survives in the package")
+        print(f"  sheets stripped: {', '.join(removed)}")
+    for sheet, cols in redact.items():
+        allowed = PUBLISH_COLUMNS[sheet]
+        print(f"  {sheet}: published {', '.join(get_column_letter(c) for c in allowed)}"
+              f"  |  withheld {', '.join(get_column_letter(c) for c in cols) or '(none)'}")
+    print(f"  {cells} cell(s) blanked, {strings} orphaned shared string(s) blanked")
+    print(f"  leak scan: 0 of {len(withheld)} withheld value(s) survive")
+    print(f"  Hard Rule #8 scan: clean ({', '.join(FORBIDDEN_TERMS)})")
     return 0
 
 

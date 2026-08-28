@@ -9,6 +9,57 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security — internal capture prose was being served publicly (2026-08-28)
+Found while auditing which `Opportunity_Detail` values would be safe to publish.
+The `Pipeline` **Notes** column — ~21,000 characters of internal capture prose
+across 25 rows — was being served on the public, search-indexable GitHub Pages
+site, and had been since the full workbook was first published. It carried
+teaming partner names, Pwin scores and EV math, bench size, no-bid rationale,
+and in `Pipeline!J25` the **CAHSP / GRHD framework names that Hard Rule #8
+forbids in any external-facing artifact** — in a sentence whose own subject was
+that those names must never be disclosed. `pages.yml`'s owner exception states
+that Rule #8 "still applies to anything served", so this was not covered by it.
+
+This predates the `Opportunity_Detail` work; the 2026-08-28 sheet strip did not
+touch it. Fixed here.
+
+- `scripts/build_leadership_feed.py` reworked from "strip whole sheets" to a
+  **disclosure allowlist** (`PUBLISH_COLUMNS`). Named columns may be published;
+  everything else in the sheet is withheld. Fail-closed: a column added later is
+  withheld by default rather than published because nobody remembered to redact
+  it. Cells are blanked in place (header included — a column label can disclose
+  on its own), styles preserved, all other package parts copied byte-for-byte so
+  cached formula results survive.
+- **Withheld:** `Pipeline!J` (Notes) in full, and the BD half of
+  `Opportunity_Detail` — `bd_posture`, `teaming_status`, `next_milestone`,
+  `milestone_owner`, `win_theme`, `staffing_gap`.
+- **Published:** the technical half — `response_due`, `scope_summary`,
+  `capabilities_required`, `labor_categories`, `compliance_gates`,
+  `place_of_performance`, `period_of_performance` — so operations and delivery
+  get the live auto-updating link they asked for (owner decision, 2026-08-28).
+- **Feed content pass.** Published fields now state the *solicitation's
+  requirement*; VBX's standing against it moved to the withheld `staffing_gap`.
+  Nine `scope_summary` values lost VBX-positioning or competitor reads, six
+  `compliance_gates` lists were rewritten from "not held / absent / unresolved"
+  to the bare requirement, and two `labor_categories` mis-fills holding our own
+  team roster (not solicitation LCATs) were cleared — the rosters remain in each
+  record's notes, so nothing is lost internally.
+- **Three fatal build guards**, none of which write output when they trip:
+  allowlist assertion (a cell outside the allowlist survived), leak scan (a
+  withheld value appears anywhere in the package bytes), and a Hard Rule #8 term
+  scan. `pages.yml` repeats the Rule #8 check independently so a change to the
+  builder cannot quietly disarm the deploy gate. A formula cell is never blanked.
+- Verified on both workbook shapes, with negative tests for every guard: the
+  Rule #8 scan refuses the pre-fix live file; the allowlist assertion catches a
+  redaction pass that silently does nothing; an unclassified new column is
+  withheld by default; formula caches (`Targets!C11-C14`, `D34-D38`) survive.
+
+⚠️ **Still public, by the standing 2026-06-05 owner exception** — not changed
+here: partner names and NDA counterparties on the `Screenings`, `NDAs` and
+`Meetings` sheets, and GSA SIN 54151HEAL on `Dashboard!B33` and `Meetings!E57`.
+Pages is search-indexable, so removal stops further exposure but does not retract
+what has already been fetched or cached.
+
 ### Added — BD posture & technical detail per opportunity (2026-08-28)
 Requested by the technical team: operations and delivery could see an opportunity's
 name, stage, and dollar value, but nothing about how they would be expected to

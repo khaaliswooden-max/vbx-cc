@@ -324,12 +324,26 @@ time so they never collide.
    `bd_posture` and `teaming_status` must match the vocabularies in
    `scripts/pipeline_feed.py`; list fields take a JSON array and no item may contain
    a semicolon. Full field reference: `docs/HOW_TO_USE_Pipeline_Feed.md`.
-6. **`Opportunity_Detail` is never published.** GitHub Pages is public and
-   search-indexable (Hard Rule #7), and this sheet carries win themes, teaming
-   status, and staffing gaps. `.github/workflows/pages.yml` runs
-   `scripts/build_leadership_feed.py` to strip the sheet before serving, then fails
-   the deploy if it survived. If you add another internal-only sheet, add it to
-   `STRIP_SHEETS` in that script.
+6. **Half of `Opportunity_Detail` is published; the other half is not.** GitHub
+   Pages is public and search-indexable (Hard Rule #7).
+   `scripts/build_leadership_feed.py` applies a disclosure **allowlist** and
+   `.github/workflows/pages.yml` runs it before serving:
+   - **Published** (technical, states the solicitation's requirement):
+     `response_due`, `scope_summary`, `capabilities_required`, `labor_categories`,
+     `compliance_gates`, `place_of_performance`, `period_of_performance`.
+   - **Withheld** (BD, states VBX's own position): `bd_posture`,
+     `teaming_status`, `next_milestone`, `milestone_owner`, `win_theme`,
+     `staffing_gap` — plus **`Pipeline!J` (Notes) in full**.
+
+   **When you write a published field, state the requirement, not our standing
+   against it.** "SOC 2 Type 2" is publishable; "SOC 2 Type 2 — not held" is not.
+   Put our standing in `staffing_gap`, which is withheld.
+
+   The policy is an allowlist in `PUBLISH_COLUMNS`, so a column added later is
+   withheld by default rather than published by omission. The build writes no
+   output and fails the deploy if a cell outside the allowlist survives, if a
+   withheld value appears anywhere in the package bytes, or if a Hard Rule #8
+   term appears anywhere in it. Whole internal-only sheets go in `STRIP_SHEETS`.
 
 Note: this covers the `Pipeline` and `Opportunity_Detail` sheets only. Other input
 sheets are still edited in Excel / via the builder per Workflows C and E.
