@@ -16,11 +16,16 @@ name: Publish leadership dashboard
 #
 # Either way the copy that reaches _site is passed through
 # scripts/build_leadership_feed.py first, which applies the disclosure
-# allowlist: it publishes the technical half of Opportunity_Detail (scope,
-# capabilities, LCATs, compliance gates, place/period of performance, response
-# due) and withholds the BD half, and it withholds Pipeline!J (Notes) entirely —
-# ~21k characters of internal capture prose that had been served publicly until
-# 2026-08-28. The committed workbook is never modified.
+# allowlist. It publishes Opportunity_Detail IN FULL — the technical half
+# (scope, capabilities, LCATs, compliance gates, place/period of performance,
+# response due) AND the BD half (posture, teaming status, next milestone,
+# milestone owner, win theme, staffing gap), by owner authorization 2026-08-28
+# (Khaalis Wooden). That means VBX's competitive posture, and its standing
+# catalogue of unheld certifications, are PUBLIC and search-indexable.
+# It still withholds Pipeline!J (Notes) entirely — ~21k characters of internal
+# capture prose (partner names, Pwin scores, EV math, POC contacts) that had
+# been served publicly until 2026-08-28. The committed workbook is never
+# modified.
 #
 # The policy is an ALLOWLIST, so a column added later is withheld by default
 # rather than published by omission. The build fails, writing no output, if:

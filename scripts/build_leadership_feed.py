@@ -13,16 +13,23 @@ WHAT IS WITHHELD, AND WHY
     partner names, Pwin scores and EV math, bench size, no-bid rationale, and
     (in one row) the internal framework names Hard Rule #8 forbids externally.
     This was being served publicly before 2026-08-28; redacting it is the fix.
-  * Opportunity_Detail BD columns — bd_posture, teaming_status, next_milestone,
-    milestone_owner, win_theme, staffing_gap. The sheet's TECHNICAL half (scope,
-    capabilities, LCATs, compliance gates, place/period of performance, response
-    due) IS published, so operations and delivery get the live link they need
-    without putting competitive posture on the open web (owner decision,
-    2026-08-28).
+  * Nothing else. Opportunity_Detail is published IN FULL.
 
-Values in the published fields state the SOLICITATION's requirement; VBX's own
-standing against it lives in the withheld fields. Keep it that way when editing
-the feed: "SOC 2 Type 2" is publishable, "SOC 2 Type 2 — not held" is not.
+WHAT CHANGED, AND WHY IT MATTERS WHEN YOU EDIT THE FEED
+Opportunity_Detail's BD half — bd_posture, teaming_status, next_milestone,
+milestone_owner, win_theme, staffing_gap — was withheld when this sheet was
+first published, on the reasoning that it states VBX's own competitive position
+rather than the solicitation's requirement. The owner reversed that the same day
+(Khaalis Wooden, 2026-08-28) so leadership reads the same brief on the public
+link that they read internally, accepting that the BD half is thereby public and
+search-indexable.
+
+The practical consequence: EVERY Opportunity_Detail field is now public, so the
+old "state the requirement, not our standing" rule no longer protects anything.
+Write every cell on that sheet as if a competitor will read it — because one
+can. staffing_gap in particular is a standing catalogue of what VBX does not
+hold. Pipeline!J (Notes) is the only remaining place for candid internal prose
+(partner names, Pwin scores, EV math, POC contacts), and it stays withheld.
 
 WHY THIS EDITS THE ZIP INSTEAD OF USING OPENPYXL
 An .xlsx is a zip of XML parts. openpyxl does not preserve CACHED FORMULA
@@ -75,11 +82,13 @@ PUBLISH_COLUMNS: dict[str, tuple[int, ...]] = {
     # A=OppID B=Name C=Client D=NAICS E=Stage F=Value G=Identified H=StageDate
     # I=Owner | J=Notes withheld (internal capture prose)
     "Pipeline": (1, 2, 3, 4, 5, 6, 7, 8, 9),
-    # A=OppID B=Name E=ResponseDue I=Scope J=Capabilities K=LaborCats
-    # L=ComplianceGates M=PlaceOfPerf N=PeriodOfPerf
-    # withheld: C=BDPosture D=TeamingStatus F=NextMilestone G=MilestoneOwner
-    #           H=WinTheme O=StaffingGap
-    "Opportunity_Detail": (1, 2, 5, 9, 10, 11, 12, 13, 14),
+    # Published IN FULL, all 15 columns, by owner authorization 2026-08-28
+    # (Khaalis Wooden) — see the module docstring. Nothing on this sheet is
+    # withheld: the BD half (C=BDPosture D=TeamingStatus F=NextMilestone
+    # G=MilestoneOwner H=WinTheme O=StaffingGap) is published alongside the
+    # technical half. Pipeline!J (Notes) is NOT covered by that authorization
+    # and stays withheld above.
+    "Opportunity_Detail": tuple(range(1, 16)),
     # --- partner-bearing sheets (owner decision, 2026-08-28) ---
     # Counts, dates, classifications and set-aside/vertical mix stay public so
     # the BD cadence KPIs keep working; the identities behind them do not.

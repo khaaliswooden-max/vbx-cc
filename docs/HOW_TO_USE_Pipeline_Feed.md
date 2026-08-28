@@ -105,20 +105,29 @@ committed workbook is never modified.
 
 | Published | Withheld |
 |---|---|
-| `response_due`, `scope_summary`, `capabilities_required`, `labor_categories`, `compliance_gates`, `place_of_performance`, `period_of_performance` | `bd_posture`, `teaming_status`, `next_milestone`, `milestone_owner`, `win_theme`, `staffing_gap`, and the whole `Pipeline` **Notes** column |
+| **Every `Opportunity_Detail` field** — `bd_posture`, `teaming_status`, `response_due`, `next_milestone`, `milestone_owner`, `win_theme`, `scope_summary`, `capabilities_required`, `labor_categories`, `compliance_gates`, `place_of_performance`, `period_of_performance`, `staffing_gap` | the whole `Pipeline` **Notes** column |
 
-The split is by *who the sentence is about*. A published field states what the
-**solicitation requires**; a withheld field states **VBX's own position** against
-it. So when you fill these in:
+**Everything you type into these fields is public.** The BD half was withheld
+when the sheet was first published, on the reasoning that it states VBX's own
+position rather than the solicitation's requirement; the owner reversed that on
+2026-08-28 so leadership reads the same brief on the public link that they read
+internally. There is no longer a "safe" column — the old rule of putting our
+standing in `staffing_gap` no longer protects it.
 
-- `"SOC 2 Type 2"` — publishable, it is the solicitation's requirement.
-- `"SOC 2 Type 2 — not held"` — **not** publishable. Put that in `staffing_gap`.
-- `"Cyber liability — up to $10M may be required"` — publishable.
-- `"...vs $6M held"` — `staffing_gap`.
+So when you fill these in:
 
-On the public dashboard the withheld fields read "Not yet recorded" and the
-Capture Notes panel is absent; internally everything shows. The build writes no
-output and fails the deploy if anything outside the allowlist survives.
+- Write every cell as if a competitor will read it, because one can.
+- `staffing_gap` is now a **public** list of what VBX does not hold. Still record
+  it honestly — the gap has to stay visible to the people planning the pursuit —
+  but keep it to the capability, not the story behind it.
+- **No named individuals and no third-party company names**, in any field.
+- Anything candid — partner names, Pwin scores, EV math, POC contacts, no-bid
+  rationale — goes in the record's `notes`, which becomes `Pipeline!J` and is the
+  one column still withheld.
+
+On the public dashboard the Capture Notes panel is absent; every other panel now
+shows the same content it shows internally. The build writes no output and fails
+the deploy if anything outside the allowlist survives.
 
 ## Edit an existing opportunity
 

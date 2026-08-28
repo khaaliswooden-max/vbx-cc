@@ -9,6 +9,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed — BD posture is now published on the leadership site (2026-08-28)
+**Owner-authorized (Khaalis Wooden), reversing the BD-half withholding decided
+earlier the same day and recorded in the entry below.** The published dashboard
+showed "Not set" / "Not yet recorded" for every opportunity's BD panel — the
+redaction working as designed, not a data gap. The owner elected to publish the
+BD half so leadership reads the same brief on the public link that they read
+internally, accepting that it is public and search-indexable.
+
+- `scripts/build_leadership_feed.py` — `PUBLISH_COLUMNS["Opportunity_Detail"]`
+  widened from nine columns to all fifteen. `bd_posture`, `teaming_status`,
+  `next_milestone`, `milestone_owner`, `win_theme` and `staffing_gap` are now
+  served. Nothing on that sheet is withheld.
+- **`Pipeline!J` (Notes) is NOT covered by this and stays withheld.** It remains
+  the only place for candid internal prose — partner names, Pwin scores, EV math,
+  POC contacts, no-bid rationale. The three fatal build guards are unchanged and
+  still pass: allowlist assertion, leak scan (0 of 305 withheld values survive),
+  Hard Rule #8 term scan.
+- **The "state the requirement, not our standing" rule is retired**, because the
+  column it relied on is now public. `CLAUDE.md` §5 Rule #7 and §7 Workflow F
+  item 6, and the `pages.yml` header, are rewritten to say so: every
+  `Opportunity_Detail` cell should be written as if a competitor reads it, and
+  no named individual or third-party company name goes in one.
+- ⚠️ **What this exposes.** `staffing_gap` is now a public, standing catalogue of
+  what VBX does not hold — SOC 2 Type 2, FedRAMP/StateRAMP, Secret FCL, CMMI-SVC
+  L3, HITRUST audit, GSA MAS SIN citability, bench size vs. required FTE. Reverse
+  by restoring `"Opportunity_Detail": (1, 2, 5, 9, 10, 11, 12, 13, 14)`.
+
+### Added — BD detail drafted from the capture notes (2026-08-28)
+Ten previously blank `Opportunity_Detail` fields filled in
+`data/pipeline_feed.jsonl`, drafted from each record's existing `Pipeline!J`
+notes and sanitized for public serving (no partner names, individuals, Pwin
+scores, EV math or POC contacts).
+
+- `staffing_gap` — OPP-019, 021, 022, 023, 025, 026, 029, 031, 038.
+- `win_theme` — OPP-032.
+- **Left blank deliberately**, per "leave a field blank rather than guessing":
+  `win_theme` on the thirteen `Not pursuing` rows (a no-bid has no win theme) and
+  on OPP-001, 028, 034, 035, 040 (the notes state no discriminator); OPP-001's is
+  the highest-value gap — it is the only award, and its theme should be the
+  owner's words. `staffing_gap` on OPP-020, 028, 032, 037. `teaming_status` on
+  OPP-040 (solicitation cancelled; teaming never assessed).
+
 ### Security — internal capture prose was being served publicly (2026-08-28)
 Found while auditing which `Opportunity_Detail` values would be safe to publish.
 The `Pipeline` **Notes** column — ~21,000 characters of internal capture prose

@@ -11,8 +11,10 @@ are written to a SECOND sheet, Opportunity_Detail (created on first sync, styled
 to the same convention), one row per Pipeline row in the same order. They go to
 their own sheet rather than extra Pipeline columns so the Pipeline sheet keeps its
 10-column contract with the HTML parser (CLAUDE.md Hard Rule #3). The detail sheet
-holds no formulas and nothing references it, so it is safe to add — and safe for
-the Pages build to strip before publishing (see scripts/build_leadership_feed.py).
+holds no formulas and nothing references it, so it is safe to add. NOTE: it is
+published IN FULL by the Pages build (owner-authorized 2026-08-28) — every cell
+written here reaches a public, search-indexable site. See
+scripts/build_leadership_feed.py.
 
 Safety guarantees (all asserted; non-zero exit on violation):
   * Only the Pipeline and Opportunity_Detail data cells change. No other sheet is
