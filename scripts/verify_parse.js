@@ -93,6 +93,11 @@ const pipeline = readSheet('Pipeline', 4, { id:0, name:1, client:2, naics:3, sta
   .map(r => ({ ...r, identified: r.identified ? excelDateToJS(r.identified) : null })).filter(r => r.id);
 const revenue = readSheet('Revenue_Ledger', 4, { date:0, client:1, contract:2, invoice:3, amount:4, paid:5, paidDate:6, notes:7 })
   .map(r => ({ ...r, date: excelDateToJS(r.date) })).filter(r => r.date);
+const oppDetail = readSheet('Opportunity_Detail', 4, {
+  id:0, name:1, bdPosture:2, teamingStatus:3, responseDue:4, nextMilestone:5,
+  milestoneOwner:6, winTheme:7, scopeSummary:8, capabilities:9, laborCategories:10,
+  complianceGates:11, placeOfPerformance:12, periodOfPerformance:13, staffingGap:14
+});
 
 // ---- checks vs Metrics_Period (formula-computed) ---------------
 // Metrics_Period columns: C=T-7d(2), F=T-30d(5), K=T-91d(10)
@@ -110,12 +115,48 @@ const checks = [
   ['Revenue $ T-91d',  trailingSum(revenue, 'amount', 'date', 91), getCell('Metrics_Period', 'K13')],
 ];
 
+// ---- Opportunity_Detail must line up 1:1 with Pipeline ----------
+// The sheet is optional (a pre-detail workbook parses fine and every panel
+// reads "not yet recorded"), but when present it must not drift from Pipeline:
+// the dashboard joins the two on Opp ID.
+const detailProblems = [];
+if (oppDetail.length > 0) {
+  const pipeIds = pipeline.map(r => r.id);
+  const detIds = oppDetail.map(r => r.id);
+  const detSet = new Set(detIds);
+  for (const id of pipeIds) {
+    if (!detSet.has(id)) detailProblems.push(`Pipeline row ${id} has no Opportunity_Detail row`);
+  }
+  const pipeSet = new Set(pipeIds);
+  for (const id of detIds) {
+    if (!pipeSet.has(id)) detailProblems.push(`Opportunity_Detail row ${id} has no Pipeline row (orphan)`);
+  }
+  if (detIds.length !== new Set(detIds).size) detailProblems.push('Opportunity_Detail has duplicate Opp IDs');
+  detIds.forEach((id, i) => {
+    if (pipeIds[i] && pipeIds[i] !== id) {
+      detailProblems.push(`row ${i + 5}: Opportunity_Detail ${id} is out of order vs Pipeline ${pipeIds[i]}`);
+    }
+  });
+}
+
 let failures = 0;
 console.log(`As_Of_Date = ${AS_OF.toISOString().slice(0,10)}   workbook = ${WB_PATH}\n`);
+
+if (oppDetail.length === 0) {
+  console.log('SKIP  Opportunity_Detail       sheet not present in this workbook\n');
+} else {
+  const withPosture = oppDetail.filter(r => r.bdPosture).length;
+  const withScope = oppDetail.filter(r => r.scopeSummary).length;
+  console.log(`${detailProblems.length === 0 ? 'PASS' : 'FAIL'}  Opportunity_Detail join    ` +
+    `${oppDetail.length} row(s) vs ${pipeline.length} Pipeline row(s); ` +
+    `${withPosture} with BD posture, ${withScope} with scope\n`);
+  detailProblems.forEach(m => console.log(`      - ${m}`));
+  failures += detailProblems.length > 0 ? 1 : 0;
+}
 for (const [label, js, xl] of checks) {
   const ok = Math.abs((js || 0) - (xl || 0)) < 1e-6;
   if (!ok) failures++;
   console.log(`${ok ? 'PASS' : 'FAIL'}  ${label.padEnd(26)} HTML=${String(js).padStart(8)}  workbook=${String(xl).padStart(8)}`);
 }
-console.log(`\n${failures === 0 ? 'ALL CHECKS PASSED' : failures + ' MISMATCH(ES)'}  (${checks.length} metrics)`);
+console.log(`\n${failures === 0 ? 'ALL CHECKS PASSED' : failures + ' MISMATCH(ES)'}  (${checks.length} metrics + Opportunity_Detail join)`);
 process.exit(failures === 0 ? 0 : 1);

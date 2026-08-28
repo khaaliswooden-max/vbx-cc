@@ -76,6 +76,17 @@ The workbook contains 12 sheets. Three categories:
 | `NDAs` | 4 | A=#, B=Entity, C=Contact, D=Date, E=File, F=Status, G=Classification |
 | `Agreements` | 4 | A=#, B=Party, C=Contact, D=Date, E=Type, F=File, G=Status, H=Notes |
 
+### Derived input sheet (written by the feed sync — do not hand-edit)
+| Sheet | Header row | Key columns |
+|---|---|---|
+| `Opportunity_Detail` | 4 | A=OppID, B=Name, C=BDPosture, D=TeamingStatus, E=ResponseDue, F=NextMilestone, G=MilestoneOwner, H=WinTheme, I=ScopeSummary, J=Capabilities, K=LaborCategories, L=ComplianceGates, M=PlaceOfPerformance, N=PeriodOfPerformance, O=StaffingGap |
+
+One row per `Pipeline` row, same order, joined on Opp ID. Written by
+`scripts/sync_pipeline_from_feed.py` from the same feed records that populate
+`Pipeline` — edit `data/pipeline_feed.jsonl`, never this sheet. Holds no formulas;
+nothing references it. **Internal only** — stripped from the published copy by
+`scripts/build_leadership_feed.py` (see Workflow F).
+
 ### Reference sheet (operator edits targets in BLUE cells only)
 | Sheet | Purpose |
 |---|---|
@@ -301,8 +312,27 @@ time so they never collide.
 4. To rebuild the feed from the workbook if they ever drift:
    `python scripts/export_pipeline_to_feed.py` (one-way, workbook → feed).
 
-Note: this covers the `Pipeline` sheet only. Other input sheets are still edited in
-Excel / via the builder per Workflows C and E.
+5. **BD posture + technical detail (optional fields on the same line).** The record
+   also carries the structured fields operations and delivery need to plan support:
+   `bd_posture`, `teaming_status`, `response_due`, `next_milestone`,
+   `milestone_owner`, `win_theme` (BD) and `scope_summary`, `capabilities_required`,
+   `labor_categories`, `compliance_gates`, `place_of_performance`,
+   `period_of_performance`, `staffing_gap` (technical). These sync to the
+   `Opportunity_Detail` sheet and render as a per-opportunity brief when a pipeline
+   row is clicked in the dashboard. All optional — **leave a field blank rather than
+   guessing**; the dashboard prints "Not yet recorded" so the gap stays visible.
+   `bd_posture` and `teaming_status` must match the vocabularies in
+   `scripts/pipeline_feed.py`; list fields take a JSON array and no item may contain
+   a semicolon. Full field reference: `docs/HOW_TO_USE_Pipeline_Feed.md`.
+6. **`Opportunity_Detail` is never published.** GitHub Pages is public and
+   search-indexable (Hard Rule #7), and this sheet carries win themes, teaming
+   status, and staffing gaps. `.github/workflows/pages.yml` runs
+   `scripts/build_leadership_feed.py` to strip the sheet before serving, then fails
+   the deploy if it survived. If you add another internal-only sheet, add it to
+   `STRIP_SHEETS` in that script.
+
+Note: this covers the `Pipeline` and `Opportunity_Detail` sheets only. Other input
+sheets are still edited in Excel / via the builder per Workflows C and E.
 
 ---
 

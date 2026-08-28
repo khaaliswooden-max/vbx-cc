@@ -8,11 +8,19 @@ name: Publish leadership dashboard
 # override of CLAUDE.md Hard Rules #1 and #7. See CLAUDE.md §5.
 #
 # DATA SENSITIVITY — the served workbook is, in order of preference:
-#   1. data/leadership_feed.xlsx       (sanitized / aggregate feed)
+#   1. data/leadership_feed.xlsx       (sanitized / aggregate feed, committed)
 #   2. VBX_Command_Center_v1.1.xlsx    (FULL workbook — raw partner /
 #                                       NDA / revenue detail, PUBLIC)
 # To publish a redacted view, commit data/leadership_feed.xlsx and
 # it is used automatically — no workflow change required.
+#
+# Either way the copy that reaches _site is passed through
+# scripts/build_leadership_feed.py first, which strips internal-only sheets
+# (currently Opportunity_Detail — BD posture, win themes, teaming status,
+# compliance and staffing gaps). Pages is public and search-indexable, and that
+# sheet is delivery-planning material, not leadership-summary content. The
+# dashboard degrades cleanly without it: every detail panel reads
+# "Not yet recorded". The committed workbook is never modified.
 # ============================================================
 
 on:
@@ -23,6 +31,8 @@ on:
       - 'dashboard/vendor/**'
       - 'VBX_Command_Center_v1.1.xlsx'
       - 'data/leadership_feed.xlsx'
+      - 'scripts/build_leadership_feed.py'
+      - 'scripts/pipeline_feed.py'
       - '.github/workflows/pages.yml'
   workflow_dispatch: {}
 
@@ -42,6 +52,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install "openpyxl>=3.1.2,<4.0.0"
+
       - name: Assemble site
         run: |
           set -euo pipefail
@@ -56,14 +71,23 @@ jobs:
           # relative fetch ('VBX_Command_Center_v1.1.xlsx') resolves.
           if [ -f data/leadership_feed.xlsx ]; then
             echo "Publishing sanitized feed: data/leadership_feed.xlsx"
-            cp data/leadership_feed.xlsx _site/VBX_Command_Center_v1.1.xlsx
+            SOURCE_WORKBOOK=data/leadership_feed.xlsx
           elif [ -f VBX_Command_Center_v1.1.xlsx ]; then
             echo "::warning::Publishing FULL workbook (raw partner/NDA/revenue data) publicly."
-            cp VBX_Command_Center_v1.1.xlsx _site/VBX_Command_Center_v1.1.xlsx
+            SOURCE_WORKBOOK=VBX_Command_Center_v1.1.xlsx
           else
             echo "::error::No workbook found to publish."
             exit 1
           fi
+          # Strip internal-only sheets on the way out. Aborts (non-zero) rather
+          # than publishing if a formula would be orphaned by the strip.
+          python scripts/build_leadership_feed.py "$SOURCE_WORKBOOK" _site/VBX_Command_Center_v1.1.xlsx
+          # build_leadership_feed.py is the real guarantee: it scans the package
+          # it just wrote for any value unique to the stripped sheet (shared
+          # string tables outlive a deleted worksheet) and exits non-zero without
+          # writing output if anything survives. This is a cheap final assertion
+          # on top of that. sys.exit(<str>) prints and exits non-zero.
+          python -c "import openpyxl, sys; sys.exit('::error::Opportunity_Detail survived into the published workbook. Refusing to deploy.' if 'Opportunity_Detail' in openpyxl.load_workbook('_site/VBX_Command_Center_v1.1.xlsx').sheetnames else 0)"
 
       - uses: actions/upload-pages-artifact@v3
         with:

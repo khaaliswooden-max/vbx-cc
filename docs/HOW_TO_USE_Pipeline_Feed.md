@@ -49,6 +49,62 @@ on `main`.
    after merge, where there's no concurrency. On a PR, CI runs `--check` to
    validate your feed line.
 
+## BD posture and technical detail
+
+The same feed line also carries the structured BD-posture and technical-scope
+fields that the operations and delivery teams asked for. They used to be buried
+inside the free-text `notes` blob, which the dashboard never rendered. All of them
+are **optional** — a record with none of them still syncs — but a pursuit that
+anyone has to plan support for should carry them.
+
+They are written to a second sheet, **`Opportunity_Detail`**, one row per Pipeline
+row in the same order, joined on Opp ID. They are *not* extra `Pipeline` columns:
+that sheet keeps its 10-column contract with the workbook and the HTML parser
+(CLAUDE.md Hard Rule #3).
+
+| Field | What goes in it |
+|---|---|
+| `bd_posture` | `Prime` · `Sub` · `Prime or Sub` · `Undecided` · `Not pursuing` |
+| `teaming_status` | `Solo` · `Partner needed` · `Partner identified` · `In discussion` · `NDA executed` · `Teaming agreement executed` · `Teaming declined` · `N/A` |
+| `response_due` | ISO `YYYY-MM-DD` — when the response is **due**. Not the same as `stage_date`, which is when the row last moved. |
+| `next_milestone` | The next concrete action |
+| `milestone_owner` | Who owns it |
+| `win_theme` | Why we win — the discriminator, not the score |
+| `scope_summary` | Plain language: what VBX would actually build or run |
+| `capabilities_required` | JSON array — technical capabilities the work needs |
+| `labor_categories` | JSON array — the LCATs or roles the solicitation names |
+| `compliance_gates` | JSON array — CMMC, FedRAMP, SOC 2, HIPAA, ATO, clearances… |
+| `place_of_performance` | Onsite / remote / hybrid, and where |
+| `period_of_performance` | Base + options |
+| `staffing_gap` | Where the bench is short today |
+
+The three array fields also accept a plain `"; "`-joined string if that is easier
+to hand-edit; both forms round-trip identically. Example:
+
+```json
+{"key": "…", "…": "…", "bd_posture": "Prime", "teaming_status": "Solo", "response_due": "2026-09-08", "next_milestone": "Re-score at RFP release", "milestone_owner": "Khaalis Wooden", "win_theme": "…", "scope_summary": "…", "capabilities_required": ["FHIR — Da Vinci CRD + PAS", "Data engineering"], "labor_categories": ["Principal Architect"], "compliance_gates": ["SOC 2", "ATO"], "place_of_performance": "Remote", "period_of_performance": "Base + 4 options", "staffing_gap": "…"}
+```
+
+`--check` reports how many records carry detail. Leaving a field out is fine and
+honest — the dashboard prints "Not yet recorded" rather than hiding the gap, so a
+blank is visible to whoever should fill it. **Prefer a blank to a guess.**
+
+### Where it shows up
+
+In the dashboard, click any pipeline row — on the main Active Pipeline table or
+inside the pipeline drill-down — to open that opportunity's brief: a facts strip
+(stage, posture, value, NAICS, owner, identified, response due) over two columns,
+**BD Posture** and **Technical Scope**, with the original capture notes underneath.
+The drill-down table also gains Posture and Response Due columns.
+
+### It is not published
+
+`Opportunity_Detail` is internal. GitHub Pages is public and search-indexable, so
+`scripts/build_leadership_feed.py` strips the sheet from the copy the Pages
+workflow serves, and the workflow fails the deploy if it somehow survives. The
+published dashboard degrades cleanly — every detail panel reads "Not yet
+recorded". Nothing about the committed workbook changes.
+
 ## Edit an existing opportunity
 
 Find its line by `key` (or `opp_id`) and edit the fields in place. Keep `opp_id`
