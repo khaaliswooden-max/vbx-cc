@@ -54,6 +54,16 @@ This structures it and surfaces it.
   (BD monthly targets) — so a load/save on the publish path would silently drop
   those KPIs to the HTML's hardcoded defaults. Every other package part is copied
   through byte-for-byte.
+  Deleting a worksheet part is **not** sufficient on an Excel-saved workbook:
+  Excel stores cell text in a workbook-wide shared string table that outlives the
+  sheet, so the detail text would remain in the published file even though the
+  sheet no longer appears. The strip now blanks every shared-string entry no
+  remaining sheet references (in place, so surviving indices still resolve) and
+  drops the sheet name from the cached document properties. The build then runs a
+  content-level leak scan — every value unique to the stripped sheet, checked
+  against the bytes about to be published — and refuses to write output if any
+  survives. Verified on a shared-string fixture: 109 values leaked before the
+  fix, 0 after.
 - **`scripts/export_pipeline_to_feed.py`** now reads `Opportunity_Detail` too, so
   the rescue rebuild no longer silently drops the detail fields, and it preserves
   author-chosen `key` values instead of overwriting them with the OPP-ID.

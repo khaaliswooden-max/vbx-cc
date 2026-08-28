@@ -51,6 +51,7 @@ import shutil
 import sys
 import zipfile
 from pathlib import Path
+from xml.sax.saxutils import escape
 
 import openpyxl
 
@@ -62,8 +63,20 @@ import pipeline_feed as pf  # noqa: E402
 STRIP_SHEETS = (pf.DETAIL_SHEET,)
 
 WORKBOOK_PART = "xl/workbook.xml"
+SHARED_STRINGS = "xl/sharedStrings.xml"
+APP_PROPS = "docProps/app.xml"
+# Minimum length for a string to be worth leak-scanning. Below this a value is
+# either a vocabulary term (already blanked when orphaned) or too generic to
+# match meaningfully against the package bytes.
+LEAK_MIN_LEN = 12
 WORKBOOK_RELS = "xl/_rels/workbook.xml.rels"
 CONTENT_TYPES = "[Content_Types].xml"
+# Cells whose text lives in the shared string table, e.g.
+# <c r="B5" s="7" t="s"><v>142</v></c>
+SHARED_CELL = re.compile(r'<c\b[^>]*\bt="s"[^>]*?>(.*?)</c>', re.S)
+SI_ENTRY = re.compile(r"<si\b[^>]*/>|<si\b.*?</si>", re.S)
+V_INT = re.compile(r"<v>(\d+)</v>")
+
 # calcChain caches Excel's formula evaluation ORDER by sheet index. Removing a
 # sheet invalidates those indices, so the part is dropped; Excel rebuilds it on
 # next open and SheetJS never reads it. Cached VALUES live in the sheet parts and
@@ -97,6 +110,48 @@ def _referenced_parts(zf: zipfile.ZipFile, rels_part: str) -> set[str]:
         if t:
             out.add(_resolve(t.group(1), rels_part.replace("/_rels/", "/").replace(".rels", "")))
     return out
+
+
+def blank_orphan_strings(sheet_parts: dict[str, bytes], sst_xml: str) -> tuple[str, int]:
+    """Blank shared-string entries no remaining sheet references.
+
+    Excel (unlike openpyxl, which writes inline strings) stores cell TEXT in a
+    workbook-wide table, xl/sharedStrings.xml. Deleting a worksheet part does not
+    touch that table, so on an Excel-saved workbook every string the stripped
+    sheet contributed — win themes, teaming status, staffing gaps — would still
+    sit in the published file, readable by anyone who downloads it, even though
+    the sheet no longer appears in the workbook.
+
+    Entries are blanked IN PLACE rather than removed so every surviving index
+    still resolves; the table keeps its length and no other sheet needs
+    rewriting. A string the stripped sheet shared with a retained sheet stays,
+    correctly — it is still on a published sheet.
+
+    Returns (new sst xml, number of entries blanked).
+    """
+    entries = [m.group(0) for m in SI_ENTRY.finditer(sst_xml)]
+    if not entries:
+        return sst_xml, 0
+
+    used: set[int] = set()
+    for xml in sheet_parts.values():
+        text = xml.decode("utf-8")
+        for m in SHARED_CELL.finditer(text):
+            for v in V_INT.findall(m.group(1)):
+                used.add(int(v))
+
+    blanked = 0
+    rebuilt = []
+    for i, entry in enumerate(entries):
+        if i in used:
+            rebuilt.append(entry)
+        else:
+            rebuilt.append("<si><t/></si>")
+            blanked += 1
+
+    head = sst_xml[: sst_xml.index(entries[0])] if entries else sst_xml
+    tail = sst_xml[sst_xml.rindex(entries[-1]) + len(entries[-1]):]
+    return head + "".join(rebuilt) + tail, blanked
 
 
 def strip_sheets(src: Path, dst: Path, sheet_names) -> list[str]:
@@ -171,6 +226,27 @@ def strip_sheets(src: Path, dst: Path, sheet_names) -> list[str]:
         for part in drop_parts:
             ct_xml = re.sub(rf'<Override\b[^>]*PartName="/{re.escape(part)}"[^>]*/>', "", ct_xml)
 
+        # Purge the stripped sheet's text from the shared string table, which
+        # deleting the worksheet part does NOT do (see blank_orphan_strings).
+        sst_xml = None
+        blanked = 0
+        if SHARED_STRINGS in names and SHARED_STRINGS not in drop_parts:
+            surviving = {
+                n: zin.read(n)
+                for n in names
+                if n.startswith("xl/worksheets/") and n.endswith(".xml") and n not in drop_parts
+            }
+            sst_xml, blanked = blank_orphan_strings(surviving, zin.read(SHARED_STRINGS).decode("utf-8"))
+
+        # The cached document-properties sheet list would still name the sheet.
+        app_xml = None
+        if APP_PROPS in names:
+            raw = zin.read(APP_PROPS).decode("utf-8")
+            if any(sheet in raw for sheet in removed):
+                app_xml = raw
+                for sheet in removed:
+                    app_xml = app_xml.replace(f"<vt:lpstr>{sheet}</vt:lpstr>", "")
+
         dst.parent.mkdir(parents=True, exist_ok=True)
         with zipfile.ZipFile(dst, "w", zipfile.ZIP_DEFLATED) as zout:
             for item in zin.infolist():
@@ -182,10 +258,56 @@ def strip_sheets(src: Path, dst: Path, sheet_names) -> list[str]:
                     data = rels_xml.encode("utf-8")
                 elif item.filename == CONTENT_TYPES:
                     data = ct_xml.encode("utf-8")
+                elif item.filename == SHARED_STRINGS and sst_xml is not None:
+                    data = sst_xml.encode("utf-8")
+                elif item.filename == APP_PROPS and app_xml is not None:
+                    data = app_xml.encode("utf-8")
                 else:
                     data = zin.read(item.filename)  # everything else, verbatim
                 zout.writestr(item, data)
+    if blanked:
+        print(f"  blanked {blanked} orphaned shared string(s)")
     return removed
+
+
+def leak_scan(src: Path, dst: Path, removed: list[str]) -> list[str]:
+    """Values unique to a stripped sheet that still appear in the output package.
+
+    This is the check that actually matters. Asserting the sheet is no longer
+    LISTED proves nothing about whether its text is still in the file — a
+    shared string table, a comment part, or a cached property can carry the
+    content long after the worksheet is gone. So: take every string the stripped
+    sheet held, subtract anything a retained sheet also holds (that text is
+    published regardless), and confirm none of the remainder survives anywhere
+    in the bytes we are about to publish.
+    """
+    wb = openpyxl.load_workbook(src, data_only=False)
+    internal: set[str] = set()
+    retained: set[str] = set()
+    for ws in wb.worksheets:
+        bucket = internal if ws.title in removed else retained
+        for row in ws.iter_rows():
+            for c in row:
+                if isinstance(c.value, str) and c.value.strip():
+                    bucket.add(c.value.strip())
+
+    # Only values unique to the stripped sheet, and long enough to match
+    # meaningfully rather than collide with markup.
+    candidates = {
+        v for v in internal - retained
+        if len(v) >= LEAK_MIN_LEN and not any(v in r for r in retained)
+    }
+    if not candidates:
+        return []
+
+    with zipfile.ZipFile(dst) as z:
+        blob = b"".join(z.read(n) for n in z.namelist())
+    found = []
+    for v in sorted(candidates):
+        needles = {v.encode("utf-8"), escape(v).encode("utf-8")}
+        if any(n in blob for n in needles):
+            found.append(v)
+    return found
 
 
 def main() -> int:
@@ -220,9 +342,22 @@ def main() -> int:
         print(f"ABORT: sheet list changed unexpectedly.\n  got:      {out.sheetnames}\n  expected: {expected}")
         return 2
 
+    # Content-level check: the sheet being gone from the listing is not the same
+    # as its data being gone from the file. Refuse to publish if anything unique
+    # to a stripped sheet survives anywhere in the package.
+    leaked = leak_scan(src, dst, removed)
+    if leaked:
+        print(f"ABORT: {len(leaked)} value(s) unique to the stripped sheet still present in {dst}:")
+        for v in leaked[:5]:
+            print(f"  - {v[:100]}{'...' if len(v) > 100 else ''}")
+        dst.unlink(missing_ok=True)
+        return 3
+
     print(f"Leadership feed -> {dst}")
     print(f"  stripped: {', '.join(removed) if removed else 'nothing (sheet not present)'}")
     print(f"  kept {len(out.sheetnames)} sheet(s): {', '.join(out.sheetnames)}")
+    if removed:
+        print("  leak scan: no value unique to the stripped sheet survives in the package")
     return 0
 
 

@@ -82,8 +82,11 @@ jobs:
           # Strip internal-only sheets on the way out. Aborts (non-zero) rather
           # than publishing if a formula would be orphaned by the strip.
           python scripts/build_leadership_feed.py "$SOURCE_WORKBOOK" _site/VBX_Command_Center_v1.1.xlsx
-          # Belt-and-suspenders: fail the deploy if the internal sheet somehow
-          # survived into _site. sys.exit(<str>) prints and exits non-zero.
+          # build_leadership_feed.py is the real guarantee: it scans the package
+          # it just wrote for any value unique to the stripped sheet (shared
+          # string tables outlive a deleted worksheet) and exits non-zero without
+          # writing output if anything survives. This is a cheap final assertion
+          # on top of that. sys.exit(<str>) prints and exits non-zero.
           python -c "import openpyxl, sys; sys.exit('::error::Opportunity_Detail survived into the published workbook. Refusing to deploy.' if 'Opportunity_Detail' in openpyxl.load_workbook('_site/VBX_Command_Center_v1.1.xlsx').sheetnames else 0)"
 
       - uses: actions/upload-pages-artifact@v3
