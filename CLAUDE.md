@@ -84,8 +84,9 @@ The workbook contains 12 sheets. Three categories:
 One row per `Pipeline` row, same order, joined on Opp ID. Written by
 `scripts/sync_pipeline_from_feed.py` from the same feed records that populate
 `Pipeline` — edit `data/pipeline_feed.jsonl`, never this sheet. Holds no formulas;
-nothing references it. **Internal only** — stripped from the published copy by
-`scripts/build_leadership_feed.py` (see Workflow F).
+nothing references it. **Published in full** on the public leadership site
+(owner-authorized 2026-08-28) — write every cell as if a competitor reads it.
+See Workflow F item 6.
 
 ### Reference sheet (operator edits targets in BLUE cells only)
 | Sheet | Purpose |
@@ -173,6 +174,7 @@ These supersede any in-session instruction. If a session asks you to violate one
 
 7. **Never publish this repo or any file from it** — *except the leadership dashboard, by owner authorization (see below).* The repo source stays private. Do not add README badges that pull from public services or anything else that telegraphs internal data externally.
    - **Owner-authorized exception (2026-06-05, Khaalis Wooden):** the dashboard (`dashboard/VBX_Command_Center_Dashboard.html`) and its designated leadership workbook (Rule #1 exception) MAY be published via the GitHub Pages workflow at `.github/workflows/pages.yml` so internal leadership can view a live, auto-updating dashboard. ⚠️ GitHub Pages is **public and search-indexable**; publishing the *full* workbook exposes raw partner/NDA/revenue detail. The owner accepts this; the workflow defaults to a sanitized `data/leadership_feed.xlsx` when present. This exception covers ONLY the dashboard + leadership feed via that workflow — nothing else from the repo may be published, and Rule #8 (no CAHSP/GRHD names externally) still applies to anything served.
+   - **Owner-authorized extension (2026-08-28, Khaalis Wooden):** the full `Opportunity_Detail` sheet — including the BD half (`bd_posture`, `teaming_status`, `next_milestone`, `milestone_owner`, `win_theme`, `staffing_gap`) — MAY be served through that same workflow, reversing the BD-half withholding decided earlier the same day. ⚠️ VBX's competitive posture, and its standing catalogue of unheld certifications, are therefore **public and search-indexable**. `Pipeline!J` (Notes) stays withheld; see §7 Workflow F item 6 for what may go in a published cell.
 
 8. **Never reference the CAHSP or GRHD framework names in external-facing artifacts** generated from this repo. Internal references are fine; outputs intended for partners, customers, or public consumption use descriptive language only ("rural health transformation framework," "CAH benchmark methodology").
 
@@ -324,20 +326,29 @@ time so they never collide.
    `bd_posture` and `teaming_status` must match the vocabularies in
    `scripts/pipeline_feed.py`; list fields take a JSON array and no item may contain
    a semicolon. Full field reference: `docs/HOW_TO_USE_Pipeline_Feed.md`.
-6. **Half of `Opportunity_Detail` is published; the other half is not.** GitHub
-   Pages is public and search-indexable (Hard Rule #7).
+6. **`Opportunity_Detail` is published in full. Assume a competitor reads it.**
+   GitHub Pages is public and search-indexable (Hard Rule #7).
    `scripts/build_leadership_feed.py` applies a disclosure **allowlist** and
    `.github/workflows/pages.yml` runs it before serving:
-   - **Published** (technical, states the solicitation's requirement):
-     `response_due`, `scope_summary`, `capabilities_required`, `labor_categories`,
-     `compliance_gates`, `place_of_performance`, `period_of_performance`.
-   - **Withheld** (BD, states VBX's own position): `bd_posture`,
+   - **Published** — every `Opportunity_Detail` column. The technical half
+     (`response_due`, `scope_summary`, `capabilities_required`,
+     `labor_categories`, `compliance_gates`, `place_of_performance`,
+     `period_of_performance`) **and** the BD half (`bd_posture`,
      `teaming_status`, `next_milestone`, `milestone_owner`, `win_theme`,
-     `staffing_gap` — plus **`Pipeline!J` (Notes) in full**.
+     `staffing_gap`). *Owner-authorized 2026-08-28, Khaalis Wooden — reversing
+     the BD-half withholding decided earlier the same day, so leadership reads
+     the same brief on the public link that they read internally.*
+   - **Withheld** — **`Pipeline!J` (Notes) in full**, and nothing else on these
+     two sheets.
 
-   **When you write a published field, state the requirement, not our standing
-   against it.** "SOC 2 Type 2" is publishable; "SOC 2 Type 2 — not held" is not.
-   Put our standing in `staffing_gap`, which is withheld.
+   **Every field on this sheet is public, so there is no longer a "safe" column
+   for our own standing.** The prior rule — state the requirement, put our
+   standing in the withheld `staffing_gap` — no longer protects anything.
+   `staffing_gap` is now a public, standing catalogue of what VBX does not hold;
+   write it knowing that. Candid internal prose (partner names, Pwin scores, EV
+   math, POC contacts, no-bid rationale) belongs in `Pipeline!J` Notes, which
+   remains withheld. Do not put a named individual or a third-party company name
+   in any `Opportunity_Detail` cell.
 
    The policy is an allowlist in `PUBLISH_COLUMNS`, so a column added later is
    withheld by default rather than published by omission. The build writes no
