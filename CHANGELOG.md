@@ -46,6 +46,14 @@ This structures it and surfaces it.
   from the copy `.github/workflows/pages.yml` serves; the workflow then fails the
   deploy if it survives. The published dashboard degrades cleanly — every detail
   panel reads "Not yet recorded". The committed workbook is unchanged by the strip.
+  The strip edits the xlsx package directly (removing the sheet part and its
+  references) rather than round-tripping through openpyxl, because openpyxl does
+  not preserve **cached formula results** and the dashboard reads only those.
+  Nine of the eleven cells it pulls via `getCell()` are formulas — `Targets!C11-C14`
+  (confirmed revenue, run-rate P/L, break-even gap, ARR gap) and `Targets!D34-D38`
+  (BD monthly targets) — so a load/save on the publish path would silently drop
+  those KPIs to the HTML's hardcoded defaults. Every other package part is copied
+  through byte-for-byte.
 - **`scripts/export_pipeline_to_feed.py`** now reads `Opportunity_Detail` too, so
   the rescue rebuild no longer silently drops the detail fields, and it preserves
   author-chosen `key` values instead of overwriting them with the OPP-ID.

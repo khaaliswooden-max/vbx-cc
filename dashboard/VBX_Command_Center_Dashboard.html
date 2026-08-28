@@ -1334,6 +1334,7 @@ const DEFAULTS = {
   meetings: [],
   pipeline: [],
   oppDetail: {},
+  hasOppDetail: false,
   screenings: [],
   ndas: [],
   agreements: [],
@@ -1626,6 +1627,11 @@ function parseWorkbook(workbook) {
     milestoneOwner: 6, winTheme: 7, scopeSummary: 8, capabilities: 9, laborCategories: 10,
     complianceGates: 11, placeOfPerformance: 12, periodOfPerformance: 13, staffingGap: 14
   });
+  // hasOppDetail distinguishes "the sheet isn't in this workbook" from "the sheet
+  // is here but this opportunity has no row". The published leadership workbook
+  // has the sheet stripped on purpose, so the first case is normal and must stay
+  // silent — only the second is an actual gap in the feed worth flagging.
+  data.hasOppDetail = detailRaw.length > 0;
   data.oppDetail = {};
   detailRaw.forEach(r => {
     data.oppDetail[r.id] = { ...r, responseDue: r.responseDue ? excelDateToJS(r.responseDue) : null };
@@ -2300,7 +2306,10 @@ function renderOpportunityBrief(opp) {
     briefField('Staffing Gap', det.staffingGap),
   ].join('');
 
-  const noDetail = Object.keys(det).length === 0
+  // Only an actual gap in a present sheet is worth an operator-facing warning.
+  // When the sheet is absent entirely (the published leadership workbook strips
+  // it), every panel simply reads "Not yet recorded".
+  const noDetail = STATE.data.hasOppDetail && Object.keys(det).length === 0
     ? `<div class="brief-warn">No Opportunity_Detail row for ${esc(opp.id)}. Add the BD posture and
        technical fields to this record in <code>data/pipeline_feed.jsonl</code>.</div>`
     : '';
