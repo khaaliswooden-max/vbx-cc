@@ -36,6 +36,11 @@ committed (Hard Rule #1).
 - **`Actions` #11–19** — the handoff's nine open items, firms cited by ID only.
   #16 and #17 (due 2026-09-25) are marked **OVERDUE**; #13 awaits the owner's
   decision.
+- **`scripts/upsert_inbound_leads.py`** — reusable, data-free merge for the next
+  handoff. Firms come from the tracker export; call schedule, ecosystem NDA rows
+  and actions come from a second input file. Both inputs stay out of git
+  (`data/_local_*`). Run on the pre-merge workbook, it reproduces this merge
+  exactly (values, formats, fonts, widths); a re-run on the result is a no-op.
 - Dashboard `parseWorkbook` reads `Inbound_Leads` into `data.inboundLeads`
   (not rendered). Verified: dashboard KPI values identical before and after,
   254 formulas unchanged, all three publish guards pass.

@@ -86,6 +86,11 @@ scheduled calls live on `Inbound_Leads`, where W–Y stay **empty** until screen
 `Inbound_Leads` is **internal-only** — `STRIP_SHEETS` removes it from the published
 copy. `Actions` is published in full, so cite firms there by `IN-` ID, never by name.
 
+**To merge an inbound handoff**, run `scripts/upsert_inbound_leads.py FIRMS.json EXTRAS.json`
+(`--check` first to preview). The script holds no data; both inputs carry partner
+data, so keep them in `data/_local_*` (gitignored) and never commit them. The input
+format is in the script's docstring.
+
 ### Derived input sheet (written by the feed sync — do not hand-edit)
 | Sheet | Header row | Key columns |
 |---|---|---|
