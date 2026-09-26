@@ -9,6 +9,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — Inbound partner leads from the 2026-09-26 handoff
+Merged the 2026-09-22 → 09-26 partner-vetting handoff (33 inbound firm records)
+into the workbook. **Wave 1 has not been sent** (goes out 2026-09-28); nothing here
+records a Wave 1 contact, send or reply. The handoff files themselves are not
+committed (Hard Rule #1).
+
+- **New sheet `Inbound_Leads`** — 32 firms, upserted on UEI then legal name (32
+  inserts, 0 duplicates). Fields copied verbatim from the tracker export;
+  fields absent there stay blank; CLAIMED wording preserved. Classification,
+  Score and SAM/SBA Verified are **empty by design** — none of the 33 is screened.
+  25 scheduled exploratory calls (24 slots; IN-UNK-01 shares IN-CA-04's call) are
+  in Call Date / Call Time (CT). No KPI reads this sheet.
+- **Internal-only.** `scripts/build_leadership_feed.py` now strips `Inbound_Leads`
+  from the published copy. Before this, any sheet not named in `PUBLISH_COLUMNS`
+  was served in full.
+- **Corrections carried in:** IN-CA-05 claims no HUBZone; IN-CA-10 is Lanes B and
+  F with no core overlap. Neither firm was previously in the repo; the corrected
+  values are what landed.
+- **RavenOne (IN-CA-15) moved to the partner ecosystem, not inbound.** Matched its
+  existing `Screenings` row by UEI. Added `NDAs` #26 for ROS-NDA-001-VISIONBLOX
+  v0.4 with **no Date** — VBX signed, awaiting countersignature, not executed — so
+  the NDA KPI does not count it. New `NDAs!H` Notes column (withheld from the
+  published copy by the existing allowlist) holds the terms review and the
+  Riverbay 4350 no-bid record.
+- **`Actions` #11–19** — the handoff's nine open items, firms cited by ID only.
+  #16 and #17 (due 2026-09-25) are marked **OVERDUE**; #13 awaits the owner's
+  decision.
+- **`scripts/upsert_inbound_leads.py`** — reusable, data-free merge for the next
+  handoff. Firms come from the tracker export; call schedule, ecosystem NDA rows
+  and actions come from a second input file. Both inputs stay out of git
+  (`data/_local_*`). Run on the pre-merge workbook, it reproduces this merge
+  exactly (values, formats, fonts, widths); a re-run on the result is a no-op.
+- Dashboard `parseWorkbook` reads `Inbound_Leads` into `data.inboundLeads`
+  (not rendered). Verified: dashboard KPI values identical before and after,
+  254 formulas unchanged, all three publish guards pass.
+
 ### Changed — BD posture is now published on the leadership site (2026-08-28)
 **Owner-authorized (Khaalis Wooden), reversing the BD-half withholding decided
 earlier the same day and recorded in the entry below.** The published dashboard

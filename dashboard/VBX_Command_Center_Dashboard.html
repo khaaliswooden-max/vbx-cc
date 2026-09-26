@@ -1674,6 +1674,17 @@ function parseWorkbook(workbook) {
   });
   data.agreements = agrRaw.map(r => ({ ...r, date: excelDateToJS(r.date) })).filter(r => r.date && r.num);
 
+  // ----- Inbound_Leads: A=ID, B=Firm, D=Lane, N=Status, O=CallDate, P=CallTime, R=NDAStatus -----
+  // INTERNAL ONLY: stripped from the published copy, so this is [] on the public site.
+  // Parsed but not rendered, and not a KPI source: these firms are UNSCREENED.
+  const inboundRaw = readSheet('Inbound_Leads', 4, {
+    id: 0, firm: 1, lane: 3, status: 13, callDate: 14, callTime: 15, ndaStatus: 17
+  });
+  data.inboundLeads = inboundRaw.map(r => ({
+    ...r,
+    callDate: r.callDate ? excelDateToJS(r.callDate) : null,
+  }));
+
   return data;
 }
 
