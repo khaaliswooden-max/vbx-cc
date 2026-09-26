@@ -9,6 +9,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed — partner UEI/CAGE served on the public site (2026-09-26)
+`Screenings!D72` (Set-Aside, a **published** column) carried RavenOne's UEI and
+CAGE inside its text, so the public dashboard tied VBX to that firm by its
+federal identifiers. It predates the 2026-09-26 handoff merge; the post-deploy
+scan of the live workbook found it.
+
+- `Screenings!D72` trimmed to `HUBZone / SDVOSB (self-reported VetCert; PR)`.
+  The set-aside claim keeps its "self-reported" qualifier.
+- The UEI and CAGE are kept internally in `NDAs!H30` (RavenOne's row, Notes —
+  withheld), so the record is not lost.
+- Verified: only those two cells change; 254 formulas unchanged; dashboard KPI
+  values unchanged; publish guards pass and neither identifier is in the
+  published copy.
+- ⚠️ Not changed here: `Screenings!D77` holds a partner CAGE code as its whole
+  Set-Aside value — same class of exposure, left for the owner's decision.
+
 ### Added — Inbound partner leads from the 2026-09-26 handoff
 Merged the 2026-09-22 → 09-26 partner-vetting handoff (33 inbound firm records)
 into the workbook. **Wave 1 has not been sent** (goes out 2026-09-28); nothing here
