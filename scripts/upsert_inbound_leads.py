@@ -34,10 +34,13 @@ RULES THE SCRIPT ENFORCES
     Agreements / Meetings) matches on UEI first, then legal name, and is kept
     OFF Inbound_Leads. Otherwise it matches an existing Inbound_Leads row on UEI,
     then legal name, and is updated in place. Re-runs never duplicate.
-  * Classification, Score and SAM/SBA Verified are written EMPTY, always. They
-    fill only when a firm is actually screened, by hand.
-  * An ecosystem NDA row gets NO Date. NDAs!D is the Effective Date, which does
-    not exist until the last signature; a Date here would count it as executed.
+  * Classification, Score and SAM/SBA Verified are written EMPTY on insert and
+    never touched on update: they fill by hand once a firm is actually screened.
+    Call Date / Time update only for firms this handoff's schedule names.
+  * An ecosystem NDA row is inserted once, with NO Date. NDAs!D is the Effective
+    Date, which does not exist until the last signature; a Date here would count
+    it as executed. A row already present is never rewritten, so the Date,
+    status and classification entered by hand when it executes survive re-runs.
   * The 254-formula set must be unchanged, or nothing is saved.
 
     python scripts/upsert_inbound_leads.py FIRMS.json EXTRAS.json [--check] [--workbook PATH]
@@ -107,6 +110,7 @@ COLUMNS = [
 ]
 WRAP_COLUMNS = {"Lane", "Why this firm", "Response notes", "Next step",
                 "Reserve Pool / Wave 1 match"}
+CALL_KEYS = {"_call_date", "_call_time"}
 COL_UEI = 1 + [h for h, _, _ in COLUMNS].index("UEI")
 COL_NAME = 1 + [h for h, _, _ in COLUMNS].index("Firm (legal name)")
 
@@ -195,12 +199,19 @@ def upsert_firms(wb, ws, firms, schedule) -> dict:
         else:
             row, next_row = next_row, next_row + 1
             log["inserted"].append(firm["ID"])
+        is_new = firm["ID"] in log["inserted"]
         record = dict(firm)
-        if firm["ID"] in schedule:
+        scheduled = firm["ID"] in schedule
+        if scheduled:
             call_date, call_time = schedule[firm["ID"]]
             record["_call_date"], record["_call_time"] = iso_date(call_date), call_time
         for col, (header, key, _) in enumerate(COLUMNS, start=1):
             cell = ws.cell(row, col)
+            # On an update, never touch what the export does not own: the
+            # screening columns (filled by hand once screened) and a call slot
+            # this handoff's schedule does not mention.
+            if not is_new and (key is None or (key in CALL_KEYS and not scheduled)):
+                continue
             cell.value = record.get(key) if key else None   # absent stays absent
             cell.font = copy.copy(INPUT_FONT)
             cell.alignment = Alignment(wrap_text=header in WRAP_COLUMNS, vertical="top")
@@ -223,17 +234,23 @@ def upsert_ecosystem_ndas(wb, firms_by_id, entries, ecosystem) -> list[int]:
                              "tracked in the partner ecosystem — refusing to split it.")
         firm = firms_by_id[entry["id"]]
         last = last_data_row(ws)
-        row = next((r for r in range(FIRST_DATA_ROW, last + 1)
-                    if ws.cell(r, NDA_DOC_COL).value == entry["doc"]), None)
-        number = ws.cell(row, 1).value if row else ws.cell(last, 1).value + 1
-        style_row = last if row != last else last - 1
-        row = row or last + 1
-        # D (Date) stays None: not executed until the last signature.
-        values = [number, firm["Firm (legal name)"], firm.get("Contact"), None,
-                  entry["doc"], entry["status"], None, firm.get("Response notes")]
+        existing = next((r for r in range(FIRST_DATA_ROW, last + 1)
+                         if ws.cell(r, NDA_DOC_COL).value == entry["doc"]), None)
+        if existing:
+            # Insert-once. After this, NDAs is the record: the Effective Date,
+            # "Executed" and the classification are entered by hand when the
+            # NDA executes, and a re-run must never revert them.
+            rows.append(existing)
+            continue
+        row = last + 1
+        # D (Date) and G (Classification) start empty: not executed until the
+        # last signature, not classified until screened.
+        values = [ws.cell(last, 1).value + 1, firm["Firm (legal name)"], firm.get("Contact"),
+                  None, entry["doc"], entry["status"], None, firm.get("Response notes")]
         for col, value in enumerate(values, start=1):
-            cell = ws.cell(row, col, value)
-            copy_style(cell, ws.cell(style_row, min(col, NDA_LAST_STYLED_COL)))
+            cell = ws.cell(row, col)
+            cell.value = value
+            copy_style(cell, ws.cell(last, min(col, NDA_LAST_STYLED_COL)))
             if col == NDA_NOTES_COL:
                 cell.alignment = Alignment(wrap_text=True, vertical="top")
         rows.append(row)
@@ -290,7 +307,8 @@ def main() -> int:
     print(f"Inbound_Leads: {len(log['inserted'])} inserted, {len(log['updated'])} updated")
     for fid, where in log["ecosystem"].items():
         print(f"  {fid} already in the partner ecosystem ({where}) — kept off Inbound_Leads")
-    print(f"NDAs rows written: {nda_rows or 'none'}  |  Actions rows added: {action_rows or 'none'}")
+    print(f"NDAs ecosystem rows (inserted or already present, untouched): {nda_rows or 'none'}"
+          f"  |  Actions rows added: {action_rows or 'none'}")
     print(f"Formulas: {len(before)} (unchanged)")
     if args.check:
         print("--check: nothing written.")
