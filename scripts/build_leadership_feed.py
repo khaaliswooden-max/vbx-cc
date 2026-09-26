@@ -13,7 +13,10 @@ WHAT IS WITHHELD, AND WHY
     partner names, Pwin scores and EV math, bench size, no-bid rationale, and
     (in one row) the internal framework names Hard Rule #8 forbids externally.
     This was being served publicly before 2026-08-28; redacting it is the fix.
-  * Nothing else. Opportunity_Detail is published IN FULL.
+  * The Inbound_Leads sheet, whole (STRIP_SHEETS) — unscreened inbound partner
+    contacts and their verbatim replies.
+  * Identity columns on the partner-bearing sheets (PUBLISH_COLUMNS below).
+  Opportunity_Detail is published IN FULL.
 
 WHAT CHANGED, AND WHY IT MATTERS WHEN YOU EDIT THE FEED
 Opportunity_Detail's BD half — bd_posture, teaming_status, next_milestone,
@@ -69,10 +72,13 @@ from openpyxl.utils import get_column_letter
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import pipeline_feed as pf  # noqa: E402
 
-# Whole sheets removed from the published copy. None today — Opportunity_Detail
-# is now published in redacted form — but the machinery stays for future
-# internal-only sheets.
-STRIP_SHEETS: tuple[str, ...] = ()
+# Whole sheets removed from the published copy. A sheet named in neither this
+# tuple nor PUBLISH_COLUMNS is published IN FULL, so every new sheet must be
+# classified in one or the other.
+#   Inbound_Leads — unscreened inbound partner replies: named contacts, emails,
+#   phones and verbatim reply notes (owner decision, 2026-09-26). No formula
+#   references it and the dashboard renders nothing from it.
+STRIP_SHEETS: tuple[str, ...] = ("Inbound_Leads",)
 
 # Disclosure policy is an ALLOWLIST, deliberately: name the columns that MAY be
 # published and everything else in the sheet is withheld. Fail-closed — a column

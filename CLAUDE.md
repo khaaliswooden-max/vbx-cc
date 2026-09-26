@@ -73,8 +73,18 @@ The workbook contains 12 sheets. Three categories:
 | `Active_Projects` | 4 | A=ID, B=Name, C=Client, D=Type, E=Value, F=Start, G=End, H=Status, I=%, J=PM |
 | `Feedback` | 4 | A=Date, B=Source, C=Party, D=Type, E=Sentiment, F=Summary, G=Action, H=Owner |
 | `Screenings` | 4 | A=#, B=Company, C=Contact, D=SetAside, E=DateNorm, F=NDADate, G=Vertical, H=Classification, I=DateDisplay |
-| `NDAs` | 4 | A=#, B=Entity, C=Contact, D=Date, E=File, F=Status, G=Classification |
+| `NDAs` | 4 | A=#, B=Entity, C=Contact, D=Date, E=File, F=Status, G=Classification, H=Notes |
 | `Agreements` | 4 | A=#, B=Party, C=Contact, D=Date, E=Type, F=File, G=Status, H=Notes |
+| `Actions` | 4 | A=#, B=Action, C=Owner, D=Deadline, E=SuccessCondition, F=Status, G=Source |
+| `Inbound_Leads` | 4 | A=ID, B=Firm, C=DBA, D=Lane, E=City, F=Contact, G=Email, H=Phone, I=Website, J=UEI, K=CAGE, L=NAICS, M=WhyThisFirm, N=Status, O=CallDate, P=CallTime(CT), Q=ResponseNotes, R=NDAStatus, S=NextStep, T=Owner, U=SourceChat, V=ReservePool/Wave1Match, W=Classification, X=Score, Y=SAM/SBAVerified |
+
+**The BD KPIs count any dated row** (`Metrics_Period` COUNTIFS on Screenings!E,
+NDAs!D, Meetings!A). So: an NDA row gets a Date only when it is **executed** (the
+Effective Date); a firm goes on `Screenings` only once it is actually screened; a
+call goes on `Meetings` only after it happens. Unscreened inbound firms and their
+scheduled calls live on `Inbound_Leads`, where W–Y stay **empty** until screening.
+`Inbound_Leads` is **internal-only** — `STRIP_SHEETS` removes it from the published
+copy. `Actions` is published in full, so cite firms there by `IN-` ID, never by name.
 
 ### Derived input sheet (written by the feed sync — do not hand-edit)
 | Sheet | Header row | Key columns |
