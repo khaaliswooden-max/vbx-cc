@@ -78,7 +78,10 @@ import pipeline_feed as pf  # noqa: E402
 #   Inbound_Leads — unscreened inbound partner replies: named contacts, emails,
 #   phones and verbatim reply notes (owner decision, 2026-09-26). No formula
 #   references it and the dashboard renders nothing from it.
-STRIP_SHEETS: tuple[str, ...] = ("Inbound_Leads",)
+#   Start_Here — the operator's home tab (scripts/organize_workbook.py): navigation
+#   and internal workflow instructions, no data. No formula references it and the
+#   dashboard renders nothing from it; leadership reads the HTML, not this tab.
+STRIP_SHEETS: tuple[str, ...] = ("Inbound_Leads", "Start_Here")
 
 # Disclosure policy is an ALLOWLIST, deliberately: name the columns that MAY be
 # published and everything else in the sheet is withheld. Fail-closed — a column

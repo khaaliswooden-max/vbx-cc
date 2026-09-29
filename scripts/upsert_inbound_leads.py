@@ -41,7 +41,7 @@ RULES THE SCRIPT ENFORCES
     Date, which does not exist until the last signature; a Date here would count
     it as executed. A row already present is never rewritten, so the Date,
     status and classification entered by hand when it executes survive re-runs.
-  * The 254-formula set must be unchanged, or nothing is saved.
+  * The 255-formula set must be unchanged, or nothing is saved.
 
     python scripts/upsert_inbound_leads.py FIRMS.json EXTRAS.json [--check] [--workbook PATH]
 
