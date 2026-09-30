@@ -132,8 +132,8 @@ DETAIL_SHEET = "Opportunity_Detail"
 DETAIL_TITLE = "  OPPORTUNITY DETAIL  —  BD Posture & Technical Scope  "
 DETAIL_BANNER = (
     "  One row per Pipeline opportunity, same order. BD posture + technical scope so "
-    "operations and delivery can plan support. INTERNAL — not published to the "
-    "leadership site."
+    "operations and delivery can plan support. PUBLISHED IN FULL on the public "
+    "leadership site — write every cell as if a competitor reads it."
 )
 
 _ID_RE = re.compile(r"^OPP-(\d+)$")

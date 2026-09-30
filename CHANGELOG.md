@@ -9,6 +9,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — `Start_Here` home tab, dropdowns and tab organization (2026-09-29)
+The workbook is now organized for daily hand entry, in place: same data, same
+columns, same header rows, so the HTML dashboard, Pipeline sync and leadership
+feed read it unchanged.
+
+- **`Start_Here`** is the first tab: color key, 5-step daily routine, a hyperlink
+  to every tab with what goes there and when, and the publish policy generated
+  from `build_leadership_feed.py`. Added to `STRIP_SHEETS` — never published.
+- **Tab order and color** grouped by task: navy = look here, gold = type here,
+  teal = automatic, amber = internal only.
+- **31 input columns validated**: category dropdowns (vocabularies from each
+  sheet's own banner row plus every value already in use), dates limited to real
+  dates 2020–2035, amounts ≥ 0. Strict for partner tiers and `Active_Projects`
+  Status (the Dashboard counts `Active`); warn-only elsewhere. No existing value
+  falls outside its list.
+- New `scripts/organize_workbook.py` builds all of the above. Idempotent (a
+  second run changes nothing but the save timestamp), holds no data, and aborts without saving if any
+  header or data cell changes.
+
+### Fixed — stale items on the Excel Dashboard tab (2026-09-29)
+- Active Blockers (`Dashboard!B33:B37`) now mirror the HTML `.blockers-list`:
+  the three items the owner declared resolved (Hard Rule #10) are removed.
+- `Dashboard!B30` expense-proxy note quoted a stale $212,270 budget and pointed
+  at the wrong row. It is now a formula that reads `Targets!C6` ($224,631) and
+  hides itself once `Expense_Ledger` has entries. Formula count 254 → 255.
+- `Opportunity_Detail` banner said "INTERNAL — not published"; it has been
+  published in full since the 2026-08-28 owner authorization. Corrected in
+  `pipeline_feed.DETAIL_BANNER` and on the sheet.
+- Verified: 14,940 cells compared before/after recalculation — only the 6
+  intended cells differ; recalc 0 errors / 255 formulas; `verify_parse.js` all
+  11 metrics pass; leadership-feed build passes its leak scan (0 of 793) and
+  Rule #8 scan; Pipeline sync `--check` passes.
+
 ### Fixed — partner UEI/CAGE served on the public site (2026-09-26)
 `Screenings!D72` (Set-Aside, a **published** column) carried RavenOne's UEI and
 CAGE inside its text, so the public dashboard tied VBX to that firm by its

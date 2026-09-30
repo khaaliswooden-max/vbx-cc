@@ -44,6 +44,10 @@ Open `dashboard/VBX_Command_Center_Dashboard.html` in any browser. Upload the wo
 
 ## Daily workflow
 
+The workbook opens on the **`Start_Here`** tab: a color key, the daily routine, and a
+clickable link to every tab with what goes there. Category columns have dropdowns and
+date columns reject text dates. Rebuild that layer with `python scripts/organize_workbook.py`.
+
 1. **Open the workbook** in Excel
 2. **Add rows** to whichever input sheets had activity:
    - `Revenue_Ledger` — new invoices issued or paid
